@@ -1,0 +1,126 @@
+name: Update All Fixed Shadowrocket Configs
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 每天 JST 03:10，GitHub Actions 使用 UTC，所以这里是 UTC 18:10
+    - cron: "30 8 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download and patch all configs
+        run: |
+          set -e
+
+          BASE_URL="https://johnshall.github.io/Shadowrocket-ADBlock-Rules-Forever"
+
+          CONFIGS=(
+            "lazy.conf"
+            "lazy_group.conf"
+            "sr_ad_only.conf"
+            "sr_adb.conf"
+            "sr_backcn.conf"
+            "sr_backcn_ad.conf"
+            "sr_cnip.conf"
+            "sr_cnip_ad.conf"
+            "sr_direct_banad.conf"
+            "sr_proxy_banad.conf"
+            "sr_top500_banlist.conf"
+            "sr_top500_banlist_ad.conf"
+            "sr_top500_whitelist.conf"
+            "sr_top500_whitelist_ad.conf"
+          )
+
+          mkdir -p configs
+
+          patch_config() {
+            local file="$1"
+
+            # 如果没有 [General]，就在文件开头创建
+            if ! grep -qiE '^\[General\]' "$file"; then
+              sed -i '1i [General]' "$file"
+            fi
+
+            # 覆盖 ipv6
+            if grep -qiE '^ipv6\s*=' "$file"; then
+              sed -i -E 's/^ipv6\s*=.*$/ipv6 = true/I' "$file"
+            else
+              sed -i '/^\[General\]/a ipv6 = true' "$file"
+            fi
+
+            # 覆盖 prefer-ipv6：允许 IPv6，但不强制优先 IPv6
+            if grep -qiE '^prefer-ipv6\s*=' "$file"; then
+              sed -i -E 's/^prefer-ipv6\s*=.*$/prefer-ipv6 = false/I' "$file"
+            else
+              sed -i '/^\[General\]/a prefer-ipv6 = false' "$file"
+            fi
+
+            # 覆盖 private-ip-answer
+            if grep -qiE '^private-ip-answer\s*=' "$file"; then
+              sed -i -E 's/^private-ip-answer\s*=.*$/private-ip-answer = true/I' "$file"
+            else
+              sed -i '/^\[General\]/a private-ip-answer = true' "$file"
+            fi
+          }
+
+          for name in "${CONFIGS[@]}"; do
+            echo "Downloading $name"
+
+            curl -L --fail --retry 3 --connect-timeout 15 \
+              "$BASE_URL/$name" \
+              -o "configs/$name"
+
+            patch_config "configs/$name"
+
+            echo "Patched $name:"
+            grep -iE '^(ipv6|prefer-ipv6|private-ip-answer)\s*=' "configs/$name" || true
+            echo ""
+          done
+
+          # 生成索引，方便查看
+          cat > configs/index.html <<'EOF'
+          <!doctype html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Fixed Shadowrocket Configs</title>
+          </head>
+          <body>
+            <h1>Fixed Shadowrocket Configs</h1>
+            <ul>
+          EOF
+
+          for name in "${CONFIGS[@]}"; do
+            echo "              <li><a href=\"./$name\">$name</a></li>" >> configs/index.html
+          done
+
+          cat >> configs/index.html <<'EOF'
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Commit patched configs
+        run: |
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add configs
+
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update all fixed Shadowrocket configs"
+            git push
+          fi
