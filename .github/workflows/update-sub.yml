@@ -3,8 +3,8 @@ name: Update All Fixed Shadowrocket Configs
 on:
   workflow_dispatch:
   schedule:
-    # 每天 JST 03:10，GitHub Actions 使用 UTC，所以这里是 UTC 18:10
-    - cron: "30 8 * * *"
+    # 每天北京时间 08:30，GitHub Actions 使用 UTC，所以这里是 UTC 00:30
+    - cron: "30 0 * * *"
 
 permissions:
   contents: write
