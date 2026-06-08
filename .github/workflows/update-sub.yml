@@ -75,7 +75,7 @@ jobs:
             patch_config "configs/$name"
 
             echo "Patched $name:"
-            grep -iE '^(ipv6|prefer-ipv6|private-ip-answer)\s*=' "configs/$name" || true
+            grep -iE '^(ipv6|private-ip-answer)\s*=' "configs/$name" || true
             echo ""
           done
 
