@@ -1,14 +1,15 @@
 # NAME: AppleServicesCustom
 # AUTHOR: jaychou0642-create
 # REPO: https://github.com/jaychou0642-create/shadowrocket-fixed-sub
-# UPDATED: 2026-06-12
-# DOMAIN: 10
-# DOMAIN-SUFFIX: 2
-# TOTAL: 12
+# UPDATED: 2026-06-13
+# DOMAIN: 12
+# DOMAIN-SUFFIX: 3
+# TOTAL: 15
 DOMAIN,account.apple.com
 DOMAIN,amp-account.apps.apple.com
 DOMAIN,buy.apps.apple.com
 DOMAIN-SUFFIX,itunes.apple.com
+DOMAIN-SUFFIX,ess.apple.com
 DOMAIN,time.apple.com
 DOMAIN,time.asia.apple.com
 DOMAIN,query.ess.apple.com
