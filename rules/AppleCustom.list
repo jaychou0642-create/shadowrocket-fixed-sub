@@ -10,6 +10,8 @@ DOMAIN,amp-account.apps.apple.com
 DOMAIN,buy.apps.apple.com
 DOMAIN-SUFFIX,itunes.apple.com
 DOMAIN,time.apple.com
+DOMAIN,time.asia.apple.com
+DOMAIN,query.ess.apple.com
 DOMAIN,iphonesubmissions.apple.com
 DOMAIN,gdmf.apple.com
 DOMAIN,humb.apple.com
