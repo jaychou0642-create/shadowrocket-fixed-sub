@@ -24,3 +24,6 @@ DOMAIN,afs.ampaeservices.com
 DOMAIN,lcdn-locator.apple.com
 DOMAIN-SUFFIX,push.apple.com
 DOMAIN,wps.apple.com
+DOMAIN-SUFFIX,weather.apple.com
+DOMAIN,weather-edge.apple.com
+DOMAIN,apple-relay.cloudflare.com
