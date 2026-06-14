@@ -1,10 +1,12 @@
 # NAME: Other
 # AUTHOR: jaychou0642-create
 # REPO: https://github.com/jaychou0642-create/shadowrocket-fixed-sub
-# UPDATED: 2026-06-14T00:00:00+08:00
-# DOMAIN: 4
-# TOTAL: 4
+# UPDATED: 2026-06-14T13:00:00+08:00
+# DOMAIN: 6
+# TOTAL: 6
 DOMAIN,updates.logitech.com
 DOMAIN,accounts.logi.com
 DOMAIN,api-updates.orbstack.dev
+DOMAIN,cdn-updates.orbstack.dev
 DOMAIN,api.segment.io
+DOMAIN,r.msftstatic.com
