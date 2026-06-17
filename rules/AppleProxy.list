@@ -1,0 +1,13 @@
+# NAME: AppleProxy
+# AUTHOR: jaychou0642-create
+# REPO: https://github.com/jaychou0642-create/shadowrocket-fixed-sub
+# UPDATED: 2026-06-18T00:00:00+08:00
+# DOMAIN-SUFFIX: 1
+# DOMAIN: 4
+# TOTAL: 5
+
+DOMAIN-SUFFIX,push.apple.com
+DOMAIN,api.push.apple.com
+DOMAIN,courier.push.apple.com
+DOMAIN,gateway.push.apple.com
+DOMAIN,feedback.push.apple.com
