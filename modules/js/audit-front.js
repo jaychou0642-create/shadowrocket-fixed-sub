@@ -7,68 +7,75 @@ const html = `
     <title>代理节点完整检测</title>
     <style>
         :root {
-            --bg-color: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-main: #1d1d1f;
+            --bg-color: #f7f7f7;
+            --surface: #ffffff;
+            --text-primary: #1d1d1f;
             --text-secondary: #86868b;
-            --border-color: #d2d2d7;
-            --accent-color: #007aff;
-            --success-color: #34c759;
-            --error-color: #ff3b30;
-            --warning-color: #ff9500;
+            --border: #e5e5ea;
+            --blue: #007aff;
+            --green: #34c759;
+            --red: #ff3b30;
+            --orange: #ff9500;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
-                --card-bg: #1c1c1e;
-                --text-main: #f5f5f7;
+                --surface: #1c1c1e;
+                --text-primary: #f5f5f7;
                 --text-secondary: #86868b;
-                --border-color: #38383a;
-                --accent-color: #0a84ff;
+                --border: #38383a;
+                --blue: #0a84ff;
+                --green: #30d158;
+                --red: #ff453a;
+                --orange: #ff9f0a;
             }
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-main);
+            color: var(--text-primary);
             margin: 0;
-            padding: 20px;
+            padding: 0;
             -webkit-font-smoothing: antialiased;
         }
 
-        h2 {
-            text-align: center;
-            font-weight: 600;
-            margin-bottom: 24px;
+        .header {
+            padding: 32px 20px 16px;
         }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .card-header {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            text-transform: uppercase;
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .section {
+            margin-top: 12px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            padding-left: 20px;
         }
 
         .row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 15px;
+            align-items: center;
+            padding: 14px 20px 14px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 17px;
         }
 
         .row:last-child {
@@ -76,7 +83,7 @@ const html = `
         }
 
         .label {
-            color: var(--text-main);
+            color: var(--text-primary);
         }
 
         .value {
@@ -87,136 +94,157 @@ const html = `
         }
 
         .status {
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        .status.success { color: var(--success-color); }
-        .status.error { color: var(--error-color); }
-        .status.warning { color: var(--warning-color); }
+
+        .status::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status.success::before { background-color: var(--green); }
+        .status.error::before { background-color: var(--red); }
+        .status.warning::before { background-color: var(--orange); }
+        .status.loading::before { 
+            background-color: var(--blue);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        .btn-container {
+            padding: 24px 20px;
+        }
 
         .btn {
             display: block;
             width: 100%;
-            padding: 14px;
-            background: var(--accent-color);
-            color: white;
+            padding: 16px;
+            background: var(--surface);
+            color: var(--blue);
             text-align: center;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 17px;
             font-weight: 600;
-            text-decoration: none;
             border: none;
-            margin-top: 24px;
             cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .btn:active {
-            opacity: 0.8;
-        }
-
-        .loading {
-            text-align: center;
-            color: var(--text-secondary);
-            font-style: italic;
-            padding: 10px 0;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
 
-    <h2>节点检测报告</h2>
+    <div class="header">
+        <h1>节点检测报告</h1>
+        <div class="subtitle">IP & AI Services Audit</div>
+    </div>
 
-    <div class="card" id="ip-card">
-        <div class="card-header">出口 IP 信息</div>
-        <div class="loading" id="ip-loading">正在检测 IP 状态...</div>
-        <div id="ip-content" style="display: none;">
-            <div class="row">
-                <span class="label">IP 地址</span>
-                <span class="value" id="ip-address">--</span>
-            </div>
-            <div class="row">
-                <span class="label">位置</span>
-                <span class="value" id="ip-location">--</span>
-            </div>
-            <div class="row">
-                <span class="label">ISP 服务商</span>
-                <span class="value" id="ip-isp">--</span>
-            </div>
-            <div class="row">
-                <span class="label">特征归属</span>
-                <span class="value" id="ip-type">--</span>
-            </div>
-            <div class="row">
-                <span class="label">代理风险</span>
-                <span class="value status" id="ip-proxy">--</span>
-            </div>
+    <!-- 出口网络信息 -->
+    <div class="section">
+        <div class="row">
+            <span class="label">出口 IP</span>
+            <span class="value" id="ip-address"><span class="status loading">检测中...</span></span>
+        </div>
+        <div class="row">
+            <span class="label">位置归属</span>
+            <span class="value" id="ip-location">--</span>
+        </div>
+        <div class="row">
+            <span class="label">ISP 服务商</span>
+            <span class="value" id="ip-isp">--</span>
+        </div>
+        <div class="row">
+            <span class="label">IP 属性</span>
+            <span class="value" id="ip-type">--</span>
         </div>
     </div>
 
-    <div class="card" id="ai-card">
-        <div class="card-header">AI 服务连通性</div>
-        <div class="loading" id="ai-loading">正在测试服务可用性...</div>
-        <div id="ai-content" style="display: none;">
-            <div class="row">
-                <span class="label">ChatGPT (Web)</span>
-                <span class="value status" id="ai-chatgpt">--</span>
-            </div>
-            <div class="row">
-                <span class="label">ChatGPT (App)</span>
-                <span class="value status" id="ai-chatgpt-app">--</span>
-            </div>
-            <div class="row">
-                <span class="label">Google Gemini</span>
-                <span class="value status" id="ai-gemini">--</span>
-            </div>
+    <!-- AI 服务连通性 -->
+    <div class="header" style="padding-top: 24px;">
+        <div class="subtitle">Services Connectivity</div>
+    </div>
+    <div class="section">
+        <div class="row">
+            <span class="label">ChatGPT (Web)</span>
+            <span class="value status loading" id="ai-chatgpt">Testing...</span>
+        </div>
+        <div class="row">
+            <span class="label">ChatGPT (App)</span>
+            <span class="value status loading" id="ai-chatgpt-app">Testing...</span>
+        </div>
+        <div class="row">
+            <span class="label">Google Gemini</span>
+            <span class="value status loading" id="ai-gemini">Testing...</span>
         </div>
     </div>
 
-    <button class="btn" onclick="startAudit()">重新检测</button>
+    <div class="btn-container">
+        <button class="btn" onclick="startAudit()">重新检测</button>
+    </div>
 
     <script>
         function updateRow(id, text, statusClass = null) {
             const el = document.getElementById(id);
             if (!el) return;
-            el.innerText = text;
+            el.innerHTML = text;
             if (statusClass) {
                 el.className = 'value status ' + statusClass;
+            } else {
+                el.className = 'value';
             }
         }
 
         async function startAudit() {
-            document.getElementById('ip-content').style.display = 'none';
-            document.getElementById('ai-content').style.display = 'none';
-            document.getElementById('ip-loading').style.display = 'block';
-            document.getElementById('ai-loading').style.display = 'block';
+            // Reset UI
+            updateRow('ip-address', '<span class="status loading">检测中...</span>');
+            updateRow('ip-location', '--');
+            updateRow('ip-isp', '--');
+            updateRow('ip-type', '--');
+            updateRow('ai-chatgpt', 'Testing...', 'loading');
+            updateRow('ai-chatgpt-app', 'Testing...', 'loading');
+            updateRow('ai-gemini', 'Testing...', 'loading');
 
             try {
                 const response = await fetch('/api', { cache: 'no-store' });
                 const data = await response.json();
                 
                 // IP Section
-                document.getElementById('ip-loading').style.display = 'none';
-                document.getElementById('ip-content').style.display = 'block';
-                
                 if (data.ipInfo) {
-                    updateRow('ip-address', data.ipInfo.ip || '未知');
+                    updateRow('ip-address', data.ipInfo.ip);
                     updateRow('ip-location', data.ipInfo.country + ' ' + (data.ipInfo.city || ''));
                     updateRow('ip-isp', data.ipInfo.isp || data.ipInfo.org);
                     
-                    let typeStr = data.ipInfo.hosting ? "数据中心 (Hosting)" : "住宅网络 (Residential/Mobile)";
-                    updateRow('ip-type', typeStr);
-
-                    let proxyClass = data.ipInfo.proxy ? "error" : "success";
-                    let proxyText = data.ipInfo.proxy ? "被标记为代理 (Proxy: True)" : "纯净 (Proxy: False)";
-                    updateRow('ip-proxy', proxyText, proxyClass);
+                    let isHosting = data.ipInfo.hosting;
+                    let isProxy = data.ipInfo.proxy;
+                    
+                    // Format like iOS Settings
+                    let typeHtml = "";
+                    if (isProxy) {
+                        typeHtml = '<span style="color: var(--red);">代理节点 (Proxy)</span>';
+                    } else if (isHosting) {
+                        typeHtml = '<span style="color: var(--orange);">数据中心 (Hosting)</span>';
+                    } else {
+                        typeHtml = '<span style="color: var(--green);">住宅/移动 (Residential)</span>';
+                    }
+                    updateRow('ip-type', typeHtml);
                 } else {
                     updateRow('ip-address', '获取失败', 'error');
                 }
 
                 // AI Section
-                document.getElementById('ai-loading').style.display = 'none';
-                document.getElementById('ai-content').style.display = 'block';
-                
                 if (data.aiStatus) {
                     updateRow('ai-chatgpt', data.aiStatus.chatgptWeb, data.aiStatus.chatgptWeb.includes("✅") ? "success" : "error");
                     updateRow('ai-chatgpt-app', data.aiStatus.chatgptApp, data.aiStatus.chatgptApp.includes("✅") ? "success" : "error");
@@ -224,9 +252,10 @@ const html = `
                 }
 
             } catch (err) {
-                alert("检测请求失败：" + err.message);
-                document.getElementById('ip-loading').innerText = "检测失败";
-                document.getElementById('ai-loading').innerText = "检测失败";
+                updateRow('ip-address', '网络错误', 'error');
+                updateRow('ai-chatgpt', 'Failed', 'error');
+                updateRow('ai-chatgpt-app', 'Failed', 'error');
+                updateRow('ai-gemini', 'Failed', 'error');
             }
         }
 
