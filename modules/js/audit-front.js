@@ -495,15 +495,44 @@ const html = `
             display: flex;
             align-items: end;
             gap: 6px;
-            height: 62px;
+            height: 82px;
             margin-top: 16px;
-            padding-top: 4px;
             border-bottom: 1px solid var(--line);
+        }
+
+        .bar-item {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 0;
+            height: 100%;
+        }
+
+        .bar-value {
+            flex: 0 0 17px;
+            overflow: hidden;
+            color: #b9d5e4;
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 9px;
+            font-weight: 700;
+            line-height: 14px;
+            text-align: center;
+            text-overflow: clip;
+            white-space: nowrap;
+        }
+
+        .bar-track {
+            display: flex;
+            flex: 1;
+            align-items: end;
+            min-height: 0;
         }
 
         .bar {
             position: relative;
-            flex: 1;
+            flex: none;
+            width: 100%;
             min-width: 3px;
             height: 12%;
             border-radius: 5px 5px 1px 1px;
@@ -561,6 +590,56 @@ const html = `
             font-size: 10px;
             line-height: 1.45;
             overflow-wrap: anywhere;
+        }
+
+        .source-summary {
+            display: inline-block;
+            margin-right: 7px;
+            color: #a9bfcc;
+            vertical-align: middle;
+        }
+
+        .signal-tags {
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 5px;
+            vertical-align: middle;
+        }
+
+        .flag-token {
+            display: inline-flex;
+            align-items: center;
+            min-height: 24px;
+            padding: 4px 8px;
+            border: 1px solid var(--line-strong);
+            border-radius: 999px;
+            background: rgba(130, 160, 180, 0.08);
+            color: #a8bdca;
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 9px;
+            font-weight: 760;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .flag-token.flag-on {
+            border-color: rgba(255, 118, 133, 0.46);
+            background: rgba(255, 118, 133, 0.14);
+            color: #ff9ba7;
+            box-shadow: 0 0 18px rgba(255, 118, 133, 0.08);
+        }
+
+        .flag-token.flag-off {
+            border-color: rgba(97, 230, 167, 0.34);
+            background: rgba(97, 230, 167, 0.1);
+            color: #7aebb8;
+        }
+
+        .flag-token.flag-warn {
+            border-color: rgba(255, 200, 106, 0.38);
+            background: rgba(255, 200, 106, 0.11);
+            color: #ffd58a;
         }
 
         .service-grid {
@@ -657,6 +736,8 @@ const html = `
             .panel-note { display: none; }
             .source { grid-template-columns: 1fr; gap: 6px; }
             .source-value { text-align: left; }
+            .signal-tags { justify-content: flex-start; }
+            .bar-value { font-size: 8px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -882,14 +963,49 @@ const html = `
                     var ok = sample && sample.ok && sample[valueKey] != null;
                     var ratio = ok ? Math.max(10, Math.round(Number(sample[valueKey]) / maxValue * 100)) : 8;
                     var className = "bar" + (extraClass ? " " + extraClass : "") + (ok ? "" : " failed");
-                    var title = ok ? String(sample[valueKey]) : "失败";
-                    return '<span class="' + className + '" style="height:' + ratio + '%" title="' + escapeHtml(title) + '"></span>';
+                    var numericValue = ok ? Number(sample[valueKey]) : null;
+                    var displayValue = ok
+                        ? (valueKey === "mbps" ? numericValue.toFixed(numericValue % 1 === 0 ? 0 : 1) : String(Math.round(numericValue)))
+                        : "×";
+                    var unit = valueKey === "mbps" ? " Mbps" : " ms";
+                    var title = ok ? displayValue + unit : "失败";
+                    return '<span class="bar-item" title="' + escapeHtml(title) + '">' +
+                        '<span class="bar-value">' + escapeHtml(displayValue) + '</span>' +
+                        '<span class="bar-track"><span class="' + className + '" style="height:' + ratio + '%"></span></span>' +
+                        '</span>';
                 }).join("");
             }
 
-            function boolSignals(flags) {
+            function flagToken(label, value, warningWhenTrue) {
+                var stateClass = value === true ? (warningWhenTrue ? "flag-warn" : "flag-on") : (value === false ? "flag-off" : "");
+                return '<span class="flag-token ' + stateClass + '">' + escapeHtml(label) + ' ' + escapeHtml(yesNo(value)) + '</span>';
+            }
+
+            function signalTags(definitions) {
+                return '<span class="signal-tags">' + definitions.map(function (definition) {
+                    return flagToken(definition[0], definition[1], definition[2] === true);
+                }).join("") + '</span>';
+            }
+
+            function renderIpapiSignals(flags) {
                 flags = flags || {};
-                return "机房 " + yesNo(flags.isDatacenter) + " · Proxy " + yesNo(flags.isProxy) + " · VPN " + yesNo(flags.isVpn) + " · Tor " + yesNo(flags.isTor) + " · 滥用 " + yesNo(flags.isAbuser);
+                return signalTags([
+                    ["机房", flags.isDatacenter, true],
+                    ["PROXY", flags.isProxy, false],
+                    ["VPN", flags.isVpn, false],
+                    ["TOR", flags.isTor, false],
+                    ["滥用", flags.isAbuser, false]
+                ]);
+            }
+
+            function renderIpquerySignals(risk) {
+                risk = risk || {};
+                return signalTags([
+                    ["机房", risk.is_datacenter, true],
+                    ["PROXY", risk.is_proxy, false],
+                    ["VPN", risk.is_vpn, false],
+                    ["TOR", risk.is_tor, false]
+                ]);
             }
 
             function renderIdentity(data) {
@@ -941,9 +1057,15 @@ const html = `
                 var sfs = reputation.stopForumSpam || {};
                 var rate = ((data.services || {}).githubAnonymousCoreRate || {});
 
-                text("rep-ipapi", exit.ipapi && exit.ipapi.available ? boolSignals(exit.ipapi.flags) : "数据源不可用");
-                text("rep-blackbox", blackbox.available ? ((blackbox.classification || "unknown") + " · 可疑 " + yesNo(blackbox.suspicious) + " · Spamhaus " + yesNo(blackboxSignals.spamhaus)) : "数据源不可用");
-                text("rep-ipquery", ipquery.available ? ("机房 " + yesNo(risk.is_datacenter) + " · Proxy " + yesNo(risk.is_proxy) + " · VPN " + yesNo(risk.is_vpn) + " · Tor " + yesNo(risk.is_tor)) : "数据源不可用");
+                byId("rep-ipapi").innerHTML = exit.ipapi && exit.ipapi.available ? renderIpapiSignals(exit.ipapi.flags) : "数据源不可用";
+                byId("rep-blackbox").innerHTML = blackbox.available
+                    ? '<span class="source-summary">' + escapeHtml(blackbox.classification || "unknown") + '</span>' + signalTags([
+                        ["PROXY", blackboxSignals.proxy, false],
+                        ["可疑", blackbox.suspicious, false],
+                        ["Spamhaus", blackboxSignals.spamhaus, false]
+                    ])
+                    : "数据源不可用";
+                byId("rep-ipquery").innerHTML = ipquery.available ? renderIpquerySignals(risk) : "数据源不可用";
                 text("rep-otx", otx.available ? ("脉冲 " + (otx.pulseCount == null ? "未知" : otx.pulseCount) + " · reputation " + (otx.reputation == null ? "未知" : otx.reputation)) : "数据源不可用");
                 text("rep-sfs", sfs.available ? ("出现 " + (sfs.appears || 0) + " · 频次 " + (sfs.frequency || 0)) : "数据源不可用");
                 text("rep-github", rate.available ? (rate.remaining + "/" + rate.limit + " remaining") : "数据源不可用");
