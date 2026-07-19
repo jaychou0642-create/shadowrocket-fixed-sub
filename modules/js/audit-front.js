@@ -3,305 +3,1041 @@ const html = `
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>节点检测报告</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#071019">
+    <title>节点观测站</title>
     <style>
         :root {
-            --bg-color: #000000;
-            --surface: #1c1c1e;
-            --text-primary: #f5f5f7;
-            --text-secondary: #86868b;
-            --border: #38383a;
-            --blue: #0a84ff;
-            --green: #30d158;
-            --red: #ff453a;
-            --orange: #ff9f0a;
+            color-scheme: dark;
+            --ink: #071019;
+            --ink-soft: #0c1824;
+            --panel: rgba(15, 29, 42, 0.78);
+            --panel-solid: #101f2d;
+            --line: rgba(159, 196, 219, 0.14);
+            --line-strong: rgba(159, 196, 219, 0.26);
+            --text: #eef7fb;
+            --muted: #88a2b3;
+            --cyan: #68e1ff;
+            --violet: #9b8cff;
+            --green: #61e6a7;
+            --amber: #ffc86a;
+            --red: #ff7685;
+            --shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            background: var(--ink);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
+            min-height: 100vh;
             margin: 0;
-            padding: 0;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 8% 2%, rgba(104, 225, 255, 0.14), transparent 30rem),
+                radial-gradient(circle at 94% 18%, rgba(155, 140, 255, 0.15), transparent 28rem),
+                linear-gradient(180deg, #08131d 0%, #071019 48%, #09131b 100%);
+            color: var(--text);
+            font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
-        .header {
-            padding: 32px 20px 16px;
-            text-align: center;
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.22;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(137, 176, 200, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(137, 176, 200, 0.08) 1px, transparent 1px);
+            background-size: 32px 32px;
+            mask-image: linear-gradient(to bottom, black, transparent 80%);
         }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin: 0;
-            letter-spacing: 0.5px;
+        button,
+        input {
+            font: inherit;
         }
 
-        .section-title {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin: 24px 20px 8px;
-            text-transform: uppercase;
-            font-weight: 500;
-            letter-spacing: 0.5px;
+        .shell {
+            width: min(100%, 860px);
+            margin: 0 auto;
+            padding: calc(env(safe-area-inset-top) + 22px) 16px calc(env(safe-area-inset-bottom) + 42px);
         }
 
-        .section {
-            background: var(--surface);
-            border-radius: 10px;
-            margin: 0 16px;
-            padding-left: 16px;
-        }
-
-        .row {
+        .topbar {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            padding: 14px 16px 14px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 15px;
+            margin-bottom: 24px;
         }
 
-        .row:last-child {
-            border-bottom: none;
-        }
-
-        .label {
-            color: var(--text-secondary);
-        }
-
-        .value {
-            color: var(--text-secondary);
-            text-align: right;
-            max-width: 65%;
-            word-break: break-all;
-        }
-
-        .status {
+        .brand {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 12px;
         }
 
-        /* 状态图标：复选框和加载指示 */
-        .status-icon {
+        .brand-mark {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(104, 225, 255, 0.38);
+            border-radius: 15px;
+            background: linear-gradient(145deg, rgba(104, 225, 255, 0.18), rgba(155, 140, 255, 0.11));
+            box-shadow: inset 0 0 22px rgba(104, 225, 255, 0.08), 0 10px 28px rgba(0, 0, 0, 0.22);
+        }
+
+        .brand-mark::before,
+        .brand-mark::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .brand-mark::before {
+            inset: 10px;
+            border: 2px solid var(--cyan);
+            border-left-color: transparent;
+            transform: rotate(-20deg);
+        }
+
+        .brand-mark::after {
+            width: 6px;
+            height: 6px;
+            top: 18px;
+            left: 18px;
+            background: var(--green);
+            box-shadow: 0 0 12px var(--green);
+        }
+
+        .brand-name {
+            font-size: 16px;
+            font-weight: 760;
+            letter-spacing: 0.03em;
+        }
+
+        .brand-kicker {
+            margin-top: 3px;
+            color: var(--muted);
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 10px;
+            letter-spacing: 0.17em;
+        }
+
+        .live-chip {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
-            background-color: var(--green);
-            color: #000;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .status-icon.err {
-            background-color: var(--red);
-            color: #fff;
-        }
-        
-        .status-icon.warn {
-            background-color: transparent;
-            font-size: 14px;
+            gap: 7px;
+            padding: 8px 11px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: rgba(8, 19, 29, 0.68);
+            color: var(--muted);
+            font-size: 11px;
         }
 
-        .status.success { color: var(--green); font-weight: 500; }
-        .status.error { color: var(--red); font-weight: 500;}
-        .status.warning { color: var(--text-primary); font-weight: 500;}
-        
-        .loading { color: var(--text-secondary); }
-
-        .btn-container {
-            padding: 24px 16px;
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #5c6d79;
+            box-shadow: 0 0 0 4px rgba(92, 109, 121, 0.12);
         }
 
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: var(--blue);
-            color: white;
-            text-align: center;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
+        body.is-running .live-dot {
+            background: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(104, 225, 255, 0.12), 0 0 16px rgba(104, 225, 255, 0.7);
+            animation: pulse 1.25s ease-in-out infinite;
         }
 
-        .btn:active {
-            opacity: 0.8;
+        body.is-ready .live-dot {
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(97, 230, 167, 0.12);
         }
-        
-        /* 进度条 */
-        #progress-container {
-            display: none;
-            width: 100%;
-            background-color: var(--border);
-            border-radius: 4px;
-            margin-top: 10px;
+
+        @keyframes pulse {
+            50% { opacity: 0.45; transform: scale(0.72); }
+        }
+
+        .hero {
+            position: relative;
             overflow: hidden;
-            height: 4px;
+            padding: 24px;
+            border: 1px solid rgba(131, 198, 229, 0.22);
+            border-radius: 28px;
+            background:
+                linear-gradient(145deg, rgba(17, 38, 55, 0.96), rgba(13, 27, 40, 0.9)),
+                var(--panel-solid);
+            box-shadow: var(--shadow);
         }
-        #progress-bar {
-            width: 0%;
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            right: -105px;
+            top: -120px;
+            border: 1px solid rgba(104, 225, 255, 0.16);
+            border-radius: 50%;
+            box-shadow:
+                0 0 0 28px rgba(104, 225, 255, 0.035),
+                0 0 0 62px rgba(155, 140, 255, 0.025);
+        }
+
+        .eyebrow {
+            position: relative;
+            margin: 0 0 10px;
+            color: var(--cyan);
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            position: relative;
+            max-width: 640px;
+            margin: 0;
+            font-size: clamp(27px, 7vw, 42px);
+            line-height: 1.12;
+            letter-spacing: -0.035em;
+        }
+
+        .hero-copy {
+            position: relative;
+            max-width: 670px;
+            min-height: 44px;
+            margin: 13px 0 0;
+            color: #a9bfcc;
+            font-size: 14px;
+            line-height: 1.62;
+        }
+
+        .hero-meta {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .meta-chip {
+            padding: 7px 10px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: rgba(5, 14, 22, 0.32);
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .scan {
+            margin-top: 14px;
+            padding: 16px 17px;
+            border: 1px solid var(--line);
+            border-radius: 19px;
+            background: rgba(7, 16, 25, 0.72);
+        }
+
+        .scan-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .scan-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .track {
+            height: 5px;
+            margin-top: 11px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(144, 180, 203, 0.12);
+        }
+
+        .track-fill {
+            width: 0;
             height: 100%;
-            background-color: var(--blue);
-            transition: width 0.3s;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--cyan), var(--violet));
+            box-shadow: 0 0 18px rgba(104, 225, 255, 0.48);
+            transition: width 0.45s ease;
+        }
+
+        .scan-steps {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-top: 11px;
+        }
+
+        .step-dot {
+            height: 3px;
+            border-radius: 999px;
+            background: rgba(144, 180, 203, 0.12);
+            transition: background 0.25s ease;
+        }
+
+        .step-dot.active {
+            background: var(--cyan);
+        }
+
+        .action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 54px;
+            margin-top: 14px;
+            border: 0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #69e3ff, #8e97ff 64%, #a88bff);
+            color: #071019;
+            font-weight: 820;
+            letter-spacing: 0.01em;
+            box-shadow: 0 16px 32px rgba(88, 170, 230, 0.2);
+            cursor: pointer;
+            transition: transform 0.18s ease, filter 0.18s ease;
+        }
+
+        .action:active {
+            transform: scale(0.985);
+        }
+
+        .action:disabled {
+            filter: saturate(0.5) brightness(0.78);
+            cursor: wait;
+        }
+
+        .action-sub {
+            margin-top: 9px;
+            color: #688294;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .dashboard {
+            display: grid;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .dashboard.is-hidden {
+            display: none;
+        }
+
+        .panel {
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 23px;
+            background: var(--panel);
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.16);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 19px 19px 14px;
+        }
+
+        .panel-index {
+            color: var(--cyan);
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 10px;
+            letter-spacing: 0.14em;
+        }
+
+        .panel-title {
+            margin: 5px 0 0;
+            font-size: 17px;
+            letter-spacing: -0.01em;
+        }
+
+        .panel-note {
+            max-width: 230px;
+            color: var(--muted);
+            text-align: right;
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+        .identity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1px;
+            border-top: 1px solid var(--line);
+            background: var(--line);
+        }
+
+        .datum {
+            min-width: 0;
+            padding: 16px 18px;
+            background: rgba(8, 18, 28, 0.8);
+        }
+
+        .datum.wide {
+            grid-column: 1 / -1;
+        }
+
+        .datum-label {
+            color: var(--muted);
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .datum-value {
+            margin-top: 7px;
+            overflow-wrap: anywhere;
+            color: var(--text);
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 0 14px 14px;
+        }
+
+        .signal {
+            min-height: 126px;
+            padding: 15px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(6, 15, 24, 0.54);
+        }
+
+        .signal-name {
+            color: var(--muted);
+            font-size: 10px;
+            letter-spacing: 0.06em;
+        }
+
+        .signal-value {
+            margin-top: 14px;
+            font-size: 15px;
+            font-weight: 760;
+            line-height: 1.25;
+        }
+
+        .signal-detail {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+        .tone-success { color: var(--green); }
+        .tone-warning { color: var(--amber); }
+        .tone-danger { color: var(--red); }
+        .tone-neutral { color: #b7c9d4; }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 0 14px 14px;
+        }
+
+        .measure {
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(6, 15, 24, 0.55);
+        }
+
+        .measure-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .measure-name {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .measure-number {
+            font-size: 24px;
+            font-weight: 780;
+            letter-spacing: -0.03em;
+        }
+
+        .measure-number small {
+            margin-left: 4px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .bars {
+            display: flex;
+            align-items: end;
+            gap: 6px;
+            height: 62px;
+            margin-top: 16px;
+            padding-top: 4px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .bar {
+            position: relative;
+            flex: 1;
+            min-width: 3px;
+            height: 12%;
+            border-radius: 5px 5px 1px 1px;
+            background: linear-gradient(to top, rgba(104, 225, 255, 0.32), var(--cyan));
+            transition: height 0.6s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        .bar.speed {
+            background: linear-gradient(to top, rgba(155, 140, 255, 0.32), var(--violet));
+        }
+
+        .bar.failed {
+            height: 8% !important;
+            background: var(--red);
+            opacity: 0.5;
+        }
+
+        .measure-foot {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .source-list,
+        .service-grid {
+            display: grid;
+            gap: 9px;
+            padding: 0 14px 14px;
+        }
+
+        .source {
+            display: grid;
+            grid-template-columns: minmax(90px, 0.7fr) minmax(0, 1.3fr);
+            align-items: center;
+            gap: 12px;
+            min-height: 58px;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: rgba(6, 15, 24, 0.52);
+        }
+
+        .source-name {
+            color: #c7d8e2;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .source-value {
+            color: var(--muted);
+            text-align: right;
+            font-size: 10px;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .service-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .service {
+            min-height: 118px;
+            padding: 15px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(6, 15, 24, 0.54);
+        }
+
+        .service-name {
+            color: #c7d8e2;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .service-state {
+            margin-top: 18px;
+            font-size: 14px;
+            font-weight: 760;
+        }
+
+        .service-meta {
+            margin-top: 8px;
+            color: var(--muted);
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 9px;
+            line-height: 1.45;
+        }
+
+        .warnings {
+            display: none;
+            margin-top: 14px;
+            padding: 16px 17px;
+            border: 1px solid rgba(255, 200, 106, 0.22);
+            border-radius: 18px;
+            background: rgba(85, 57, 12, 0.18);
+            color: #dec99f;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .warnings.show {
+            display: block;
+        }
+
+        .warnings ul {
+            margin: 8px 0 0;
+            padding-left: 18px;
+        }
+
+        .method {
+            margin-top: 14px;
+            padding: 17px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(7, 16, 25, 0.48);
+            color: #7892a3;
+            font-size: 10px;
+            line-height: 1.62;
+        }
+
+        .fatal {
+            display: none;
+            margin-top: 14px;
+            padding: 18px;
+            border: 1px solid rgba(255, 118, 133, 0.3);
+            border-radius: 18px;
+            background: rgba(103, 22, 35, 0.25);
+            color: #ffc1c8;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .fatal.show {
+            display: block;
+        }
+
+        @media (min-width: 680px) {
+            .shell { padding-left: 24px; padding-right: 24px; }
+            .performance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .service-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .hero { padding: 31px; }
+        }
+
+        @media (max-width: 430px) {
+            .hero { padding: 21px 18px; border-radius: 24px; }
+            .matrix { grid-template-columns: 1fr; }
+            .signal { min-height: 106px; }
+            .panel-note { display: none; }
+            .source { grid-template-columns: 1fr; gap: 6px; }
+            .source-value { text-align: left; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                transition-duration: 0.001ms !important;
+            }
         }
     </style>
 </head>
 <body>
+    <main class="shell">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true"></div>
+                <div>
+                    <div class="brand-name">节点观测站</div>
+                    <div class="brand-kicker">PROXY OBSERVATORY</div>
+                </div>
+            </div>
+            <div class="live-chip"><span class="live-dot"></span><span id="live-text">待命</span></div>
+        </header>
 
-    <div class="header">
-        <h1>节点检测报告</h1>
-    </div>
+        <section class="hero">
+            <p class="eyebrow" id="hero-kicker">FULL PATH AUDIT</p>
+            <h1 id="hero-title">看清出口，而不是猜一个“纯净分”</h1>
+            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、8 轮延迟、两次下载测速和五个服务入口验证。</p>
+            <div class="hero-meta">
+                <span class="meta-chip" id="meta-profile">完整模式</span>
+                <span class="meta-chip" id="meta-time">尚未检测</span>
+                <span class="meta-chip" id="meta-elapsed">预计流量约 20 MB</span>
+            </div>
+        </section>
 
-    <div class="section-title">出口 IP 信息</div>
-    <div class="section">
-        <div class="row">
-            <span class="label">IP 地址</span>
-            <span class="value" id="ip-address">未检测</span>
-        </div>
-        <div class="row">
-            <span class="label">位置</span>
-            <span class="value" id="ip-location">未检测</span>
-        </div>
-        <div class="row">
-            <span class="label">ISP 服务商</span>
-            <span class="value" id="ip-isp">未检测</span>
-        </div>
-        <div class="row">
-            <span class="label">特征归属</span>
-            <span class="value" id="ip-type">未检测</span>
-        </div>
-        <div class="row">
-            <span class="label">代理风险</span>
-            <span class="value" id="ip-proxy">未检测</span>
-        </div>
-    </div>
+        <section class="scan" aria-live="polite">
+            <div class="scan-head">
+                <span class="scan-label" id="scan-label">点击开始后，将通过当前节点执行只读检测</span>
+                <span id="scan-percent">0%</span>
+            </div>
+            <div class="track"><div class="track-fill" id="track-fill"></div></div>
+            <div class="scan-steps" id="scan-steps">
+                <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
+                <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
+            </div>
+        </section>
 
-    <div class="section-title">AI 服务连通性</div>
-    <div class="section">
-        <div class="row">
-            <span class="label">ChatGPT (Web)</span>
-            <span class="value" id="ai-chatgpt">未检测</span>
-        </div>
-        <div class="row">
-            <span class="label">ChatGPT (App)</span>
-            <span class="value" id="ai-chatgpt-app">未检测</span>
-        </div>
-        <div class="row">
-            <span class="label">Google Gemini</span>
-            <span class="value" id="ai-gemini">未检测</span>
-        </div>
-    </div>
+        <button class="action" id="run-button" type="button">开始完整检测</button>
+        <div class="action-sub">只读检测 · 不切换节点 · 约 20 MB 下载流量</div>
+        <div class="fatal" id="fatal"></div>
 
-    <div class="btn-container">
-        <button class="btn" id="start-btn" onclick="startAudit()">开始检测</button>
-        <div id="progress-container">
-            <div id="progress-bar"></div>
+        <div class="dashboard is-hidden" id="dashboard">
+            <section class="panel">
+                <div class="panel-head">
+                    <div><div class="panel-index">01 / EXIT</div><h2 class="panel-title">出口坐标</h2></div>
+                    <div class="panel-note">服务端观测结果优先于本地 Fake-IP</div>
+                </div>
+                <div class="identity-grid">
+                    <div class="datum"><div class="datum-label">IPv4</div><div class="datum-value" id="exit-ipv4">—</div></div>
+                    <div class="datum"><div class="datum-label">IPv6</div><div class="datum-value" id="exit-ipv6">—</div></div>
+                    <div class="datum"><div class="datum-label">观测 IP</div><div class="datum-value" id="exit-observed">—</div></div>
+                    <div class="datum"><div class="datum-label">位置 / 边缘节点</div><div class="datum-value" id="exit-location">—</div></div>
+                    <div class="datum wide"><div class="datum-label">ASN / 组织</div><div class="datum-value" id="exit-asn">—</div></div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div><div class="panel-index">02 / SIGNALS</div><h2 class="panel-title">结论矩阵</h2></div>
+                    <div class="panel-note">网络身份和代理出口分别判读</div>
+                </div>
+                <div class="matrix">
+                    <article class="signal"><div class="signal-name">网络身份</div><div class="signal-value" id="signal-identity">—</div><div class="signal-detail" id="signal-identity-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">代理出口</div><div class="signal-value" id="signal-proxy">—</div><div class="signal-detail" id="signal-proxy-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">公开风险历史</div><div class="signal-value" id="signal-threat">—</div><div class="signal-detail" id="signal-threat-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">共享压力</div><div class="signal-value" id="signal-sharing">—</div><div class="signal-detail" id="signal-sharing-detail">—</div></article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div><div class="panel-index">03 / PERFORMANCE</div><h2 class="panel-title">链路样本</h2></div>
+                    <div class="panel-note">延迟为 HTTPS 完整请求耗时</div>
+                </div>
+                <div class="performance-grid">
+                    <article class="measure">
+                        <div class="measure-top"><span class="measure-name">延迟中位数</span><span class="measure-number" id="latency-number">—<small>ms</small></span></div>
+                        <div class="bars" id="latency-bars"></div>
+                        <div class="measure-foot"><span id="latency-success">—</span><span id="latency-range">—</span></div>
+                    </article>
+                    <article class="measure">
+                        <div class="measure-top"><span class="measure-name">下载速度中位数</span><span class="measure-number" id="speed-number">—<small>Mbps</small></span></div>
+                        <div class="bars" id="speed-bars"></div>
+                        <div class="measure-foot"><span id="speed-success">—</span><span id="speed-range">—</span></div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div><div class="panel-index">04 / REPUTATION</div><h2 class="panel-title">公开信誉源</h2></div>
+                    <div class="panel-note">超时与限流一律显示未知</div>
+                </div>
+                <div class="source-list">
+                    <div class="source"><div class="source-name">ipapi.is</div><div class="source-value" id="rep-ipapi">—</div></div>
+                    <div class="source"><div class="source-name">Blackbox</div><div class="source-value" id="rep-blackbox">—</div></div>
+                    <div class="source"><div class="source-name">IPQuery</div><div class="source-value" id="rep-ipquery">—</div></div>
+                    <div class="source"><div class="source-name">AlienVault OTX</div><div class="source-value" id="rep-otx">—</div></div>
+                    <div class="source"><div class="source-name">StopForumSpam</div><div class="source-value" id="rep-sfs">—</div></div>
+                    <div class="source"><div class="source-name">GitHub 匿名额度</div><div class="source-value" id="rep-github">—</div></div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div><div class="panel-index">05 / SERVICES</div><h2 class="panel-title">服务入口</h2></div>
+                    <div class="panel-note">入口响应不代表账号或模型可用</div>
+                </div>
+                <div class="service-grid" id="service-grid"></div>
+            </section>
         </div>
-    </div>
+
+        <aside class="warnings" id="warnings"><strong>本次检测备注</strong><ul id="warning-list"></ul></aside>
+        <footer class="method">判读原则：托管/数据中心身份不等于恶意 IP；代理/VPN 信号与网络身份是两个维度；单个信誉源未命中不代表绝对干净；ChatGPT 挑战页和 OpenAI API 的未授权响应只能证明入口已到达。</footer>
+    </main>
 
     <script>
-        function updateRow(id, text, htmlMode = false) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (htmlMode) {
-                el.innerHTML = text;
-            } else {
-                el.innerText = text;
+        (function () {
+            var button = document.getElementById("run-button");
+            var dashboard = document.getElementById("dashboard");
+            var fatal = document.getElementById("fatal");
+            var progressTimer = null;
+            var progress = 0;
+            var stages = [
+                { at: 8, text: "建立出口快照" },
+                { at: 24, text: "查询公开信誉源" },
+                { at: 42, text: "运行 8 轮 HTTPS 延迟" },
+                { at: 60, text: "执行两次下载测速" },
+                { at: 76, text: "验证服务入口" },
+                { at: 90, text: "汇总结论矩阵" }
+            ];
+
+            function byId(id) {
+                return document.getElementById(id);
             }
-        }
-        
-        function setProgress(percent) {
-            document.getElementById('progress-bar').style.width = percent + '%';
-        }
 
-        async function startAudit() {
-            const btn = document.getElementById('start-btn');
-            const progressContainer = document.getElementById('progress-container');
-            
-            btn.innerText = "检测中...";
-            btn.disabled = true;
-            progressContainer.style.display = 'block';
-            setProgress(10);
-            
-            // Reset UI
-            updateRow('ip-address', '检测中...');
-            updateRow('ip-location', '检测中...');
-            updateRow('ip-isp', '检测中...');
-            updateRow('ip-type', '检测中...');
-            updateRow('ip-proxy', '检测中...');
-            updateRow('ai-chatgpt', '检测中...');
-            updateRow('ai-chatgpt-app', '检测中...');
-            updateRow('ai-gemini', '检测中...');
-
-            try {
-                // We use event streams or polling conceptually, but for simplicity here we just await the full API
-                // To simulate progress, we jump to 50%
-                setProgress(50);
-                
-                const response = await fetch('/api', { cache: 'no-store' });
-                const data = await response.json();
-                setProgress(90);
-                
-                // IP Section
-                if (data.ipInfo) {
-                    updateRow('ip-address', data.ipInfo.ip);
-                    updateRow('ip-location', data.ipInfo.country + ' ' + (data.ipInfo.city || ''));
-                    updateRow('ip-isp', data.ipInfo.isp || data.ipInfo.org);
-                    
-                    let isHosting = data.ipInfo.hosting;
-                    updateRow('ip-type', isHosting ? '数据中心 (Hosting)' : '住宅网络 (Residential)');
-
-                    let isProxy = data.ipInfo.proxy;
-                    if (isProxy) {
-                        updateRow('ip-proxy', '<span class="status error">代理 (Proxy: True)</span>', true);
-                    } else {
-                        updateRow('ip-proxy', '<span class="status success">纯净 (Proxy: False)</span>', true);
-                    }
-                } else {
-                    updateRow('ip-address', '获取失败');
-                }
-
-                // AI Section Helper
-                const formatAI = (statusObj) => {
-                    if (statusObj.status === 'success') {
-                        return '<span class="status success"><span class="status-icon">✓</span>可用 (' + statusObj.ms + 'ms)</span>';
-                    } else if (statusObj.status === 'blocked') {
-                        return '<span class="status error"><span class="status-icon err">✕</span>不可用 (' + (statusObj.ms || '403') + ')</span>';
-                    } else {
-                        return '<span class="status error"><span class="status-icon err">✕</span>失败 (' + statusObj.error + ')</span>';
-                    }
-                };
-
-                if (data.aiStatus) {
-                    updateRow('ai-chatgpt', formatAI(data.aiStatus.chatgptWeb), true);
-                    updateRow('ai-chatgpt-app', formatAI(data.aiStatus.chatgptApp), true);
-                    updateRow('ai-gemini', formatAI(data.aiStatus.gemini), true);
-                }
-
-                setProgress(100);
-            } catch (err) {
-                updateRow('ip-address', '网络错误');
-                updateRow('ai-chatgpt', 'Failed');
-                updateRow('ai-chatgpt-app', 'Failed');
-                updateRow('ai-gemini', 'Failed');
-            } finally {
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    btn.innerText = "重新检测";
-                    btn.disabled = false;
-                    setProgress(0);
-                }, 500);
+            function escapeHtml(value) {
+                return String(value == null ? "" : value)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
-        }
+
+            function text(id, value, fallback) {
+                var element = byId(id);
+                if (!element) return;
+                var resolved = value == null || value === "" ? (fallback || "—") : value;
+                element.textContent = String(resolved);
+            }
+
+            function yesNo(value) {
+                if (value === true || value === 1) return "是";
+                if (value === false || value === 0) return "否";
+                return "未知";
+            }
+
+            function toneClass(tone) {
+                if (tone === "success") return "tone-success";
+                if (tone === "warning") return "tone-warning";
+                if (tone === "danger") return "tone-danger";
+                return "tone-neutral";
+            }
+
+            function renderSignal(valueId, detailId, signal) {
+                var value = byId(valueId);
+                var detail = byId(detailId);
+                signal = signal || {};
+                value.textContent = signal.label || "未知";
+                value.className = "signal-value " + toneClass(signal.tone);
+                detail.textContent = signal.detail || "暂无补充证据";
+            }
+
+            function updateProgress(next, label) {
+                progress = Math.max(0, Math.min(100, next));
+                byId("track-fill").style.width = progress + "%";
+                text("scan-percent", Math.round(progress) + "%");
+                if (label) text("scan-label", label);
+                var dots = byId("scan-steps").querySelectorAll(".step-dot");
+                var activeCount = Math.ceil(progress / (100 / dots.length));
+                Array.prototype.forEach.call(dots, function (dot, index) {
+                    dot.classList.toggle("active", index < activeCount);
+                });
+            }
+
+            function beginProgress() {
+                progress = 3;
+                updateProgress(progress, stages[0].text);
+                progressTimer = setInterval(function () {
+                    var increment = progress < 35 ? 2.4 : (progress < 70 ? 1.25 : 0.45);
+                    progress = Math.min(92, progress + increment);
+                    var label = stages[0].text;
+                    stages.forEach(function (stage) {
+                        if (progress >= stage.at) label = stage.text;
+                    });
+                    updateProgress(progress, label);
+                }, 520);
+            }
+
+            function stopProgress(success) {
+                if (progressTimer) clearInterval(progressTimer);
+                progressTimer = null;
+                updateProgress(success ? 100 : progress, success ? "检测完成，报告已生成" : "检测未完成");
+            }
+
+            function renderBars(containerId, samples, valueKey, extraClass) {
+                var container = byId(containerId);
+                var values = (samples || []).map(function (sample) {
+                    return sample && sample.ok && sample[valueKey] != null ? Number(sample[valueKey]) : 0;
+                });
+                var maxValue = Math.max.apply(null, values.concat([1]));
+                container.innerHTML = (samples || []).map(function (sample) {
+                    var ok = sample && sample.ok && sample[valueKey] != null;
+                    var ratio = ok ? Math.max(10, Math.round(Number(sample[valueKey]) / maxValue * 100)) : 8;
+                    var className = "bar" + (extraClass ? " " + extraClass : "") + (ok ? "" : " failed");
+                    var title = ok ? String(sample[valueKey]) : "失败";
+                    return '<span class="' + className + '" style="height:' + ratio + '%" title="' + escapeHtml(title) + '"></span>';
+                }).join("");
+            }
+
+            function boolSignals(flags) {
+                flags = flags || {};
+                return "机房 " + yesNo(flags.isDatacenter) + " · Proxy " + yesNo(flags.isProxy) + " · VPN " + yesNo(flags.isVpn) + " · Tor " + yesNo(flags.isTor) + " · 滥用 " + yesNo(flags.isAbuser);
+            }
+
+            function renderIdentity(data) {
+                var exit = data.exit || {};
+                text("exit-ipv4", exit.ipv4, "未检测到");
+                text("exit-ipv6", exit.ipv6, "未检测到");
+                text("exit-observed", exit.observedIp, "未知");
+                var location = [exit.country, exit.city].filter(Boolean).join(" · ") || "未知";
+                if (exit.colo) location += " / " + exit.colo;
+                text("exit-location", location);
+                var asn = exit.asn ? "AS" + exit.asn : "ASN 未知";
+                text("exit-asn", asn + " · " + (exit.organisation || exit.company || "组织未知"));
+            }
+
+            function renderAssessment(data) {
+                var assessment = data.assessment || {};
+                renderSignal("signal-identity", "signal-identity-detail", assessment.networkIdentity);
+                renderSignal("signal-proxy", "signal-proxy-detail", assessment.proxyExit);
+                renderSignal("signal-threat", "signal-threat-detail", assessment.threatHistory);
+                renderSignal("signal-sharing", "signal-sharing-detail", assessment.sharingPressure);
+                text("hero-kicker", "AUDIT COMPLETE · " + ((assessment.proxyDetectability || {}).label || "信号已汇总"));
+                text("hero-title", "当前出口画像已生成");
+                text("hero-copy", assessment.verdict || "检测完成，详细结果见下方。 ");
+            }
+
+            function renderPerformance(data) {
+                var performance = data.performance || {};
+                var latency = performance.latency || {};
+                var bandwidth = performance.bandwidth || {};
+                byId("latency-number").innerHTML = escapeHtml(latency.medianMs == null ? "—" : latency.medianMs) + "<small>ms</small>";
+                byId("speed-number").innerHTML = escapeHtml(bandwidth.medianMbps == null ? "—" : bandwidth.medianMbps) + "<small>Mbps</small>";
+                renderBars("latency-bars", latency.samples || [], "ms", "");
+                renderBars("speed-bars", bandwidth.samples || [], "mbps", "speed");
+                text("latency-success", "成功 " + (latency.success || 0) + "/" + (latency.rounds || 0));
+                text("latency-range", latency.minimumMs == null ? "无有效样本" : "范围 " + latency.minimumMs + "–" + latency.maximumMs + " ms");
+                var speedSamples = (bandwidth.samples || []).filter(function (sample) { return sample.ok; }).length;
+                text("speed-success", "成功 " + speedSamples + "/" + (bandwidth.runs || 0));
+                text("speed-range", bandwidth.minimumMbps == null ? "无有效样本" : "范围 " + bandwidth.minimumMbps + "–" + bandwidth.maximumMbps + " Mbps");
+            }
+
+            function renderReputation(data) {
+                var exit = data.exit || {};
+                var reputation = data.reputation || {};
+                var blackbox = reputation.blackbox || {};
+                var blackboxSignals = blackbox.signals || {};
+                var ipquery = reputation.ipquery || {};
+                var risk = ipquery.risk || {};
+                var otx = reputation.alienvaultOtx || {};
+                var sfs = reputation.stopForumSpam || {};
+                var rate = ((data.services || {}).githubAnonymousCoreRate || {});
+
+                text("rep-ipapi", exit.ipapi && exit.ipapi.available ? boolSignals(exit.ipapi.flags) : "数据源不可用");
+                text("rep-blackbox", blackbox.available ? ((blackbox.classification || "unknown") + " · 可疑 " + yesNo(blackbox.suspicious) + " · Spamhaus " + yesNo(blackboxSignals.spamhaus)) : "数据源不可用");
+                text("rep-ipquery", ipquery.available ? ("机房 " + yesNo(risk.is_datacenter) + " · Proxy " + yesNo(risk.is_proxy) + " · VPN " + yesNo(risk.is_vpn) + " · Tor " + yesNo(risk.is_tor)) : "数据源不可用");
+                text("rep-otx", otx.available ? ("脉冲 " + (otx.pulseCount == null ? "未知" : otx.pulseCount) + " · reputation " + (otx.reputation == null ? "未知" : otx.reputation)) : "数据源不可用");
+                text("rep-sfs", sfs.available ? ("出现 " + (sfs.appears || 0) + " · 频次 " + (sfs.frequency || 0)) : "数据源不可用");
+                text("rep-github", rate.available ? (rate.remaining + "/" + rate.limit + " remaining") : "数据源不可用");
+            }
+
+            function renderServices(data) {
+                var services = data.services || {};
+                var definitions = [
+                    ["Cloudflare", services.cloudflare],
+                    ["Google", services.google],
+                    ["ChatGPT", services.chatgpt],
+                    ["OpenAI API", services.openai],
+                    ["GitHub API", services.github]
+                ];
+                byId("service-grid").innerHTML = definitions.map(function (definition) {
+                    var item = definition[1] || {};
+                    var tone = item.state === "reachable" ? "success" : (item.state === "error" ? "danger" : "warning");
+                    var meta = [];
+                    if (item.status) meta.push("HTTP " + item.status);
+                    if (item.ms != null) meta.push(item.ms + " ms");
+                    if (item.detail) meta.push(item.detail);
+                    return '<article class="service">' +
+                        '<div class="service-name">' + escapeHtml(definition[0]) + '</div>' +
+                        '<div class="service-state ' + toneClass(tone) + '">' + escapeHtml(item.label || "未知") + '</div>' +
+                        '<div class="service-meta">' + escapeHtml(meta.join(" · ") || item.error || "无数据") + '</div>' +
+                        '</article>';
+                }).join("");
+            }
+
+            function renderWarnings(data) {
+                var warnings = data.warnings || [];
+                var box = byId("warnings");
+                box.classList.toggle("show", warnings.length > 0);
+                byId("warning-list").innerHTML = warnings.map(function (warning) {
+                    return "<li>" + escapeHtml(warning) + "</li>";
+                }).join("");
+            }
+
+            function renderMeta(data) {
+                var meta = data.meta || {};
+                var checked = meta.checkedAt ? new Date(meta.checkedAt) : null;
+                text("meta-profile", "FULL · v" + (meta.version || "—"));
+                text("meta-time", checked && !isNaN(checked.getTime()) ? checked.toLocaleString("zh-CN", { hour12: false }) : "时间未知");
+                text("meta-elapsed", meta.elapsedMs == null ? "耗时未知" : "总耗时 " + (meta.elapsedMs / 1000).toFixed(1) + " 秒");
+            }
+
+            function render(data) {
+                renderMeta(data);
+                renderIdentity(data);
+                renderAssessment(data);
+                renderPerformance(data);
+                renderReputation(data);
+                renderServices(data);
+                renderWarnings(data);
+                dashboard.classList.remove("is-hidden");
+                document.body.classList.remove("is-running");
+                document.body.classList.add("is-ready");
+                text("live-text", "报告就绪");
+            }
+
+            async function run() {
+                button.disabled = true;
+                button.textContent = "正在扫描当前出口…";
+                fatal.classList.remove("show");
+                dashboard.classList.add("is-hidden");
+                byId("warnings").classList.remove("show");
+                document.body.classList.remove("is-ready");
+                document.body.classList.add("is-running");
+                text("live-text", "扫描中");
+                beginProgress();
+
+                try {
+                    var response = await fetch("/api", { cache: "no-store", headers: { "Accept": "application/json" } });
+                    var data = await response.json();
+                    if (!response.ok || data.error) {
+                        throw new Error(data.detail || data.error || "HTTP " + response.status);
+                    }
+                    stopProgress(true);
+                    render(data);
+                    button.textContent = "重新检测当前节点";
+                } catch (error) {
+                    stopProgress(false);
+                    document.body.classList.remove("is-running");
+                    text("live-text", "检测失败");
+                    fatal.textContent = "检测没有完成：" + (error && error.message ? error.message : String(error)) + "。请确认模块已启用并稍后重试。";
+                    fatal.classList.add("show");
+                    button.textContent = "重试完整检测";
+                } finally {
+                    button.disabled = false;
+                }
+            }
+
+            button.addEventListener("click", run);
+        }());
     </script>
 </body>
 </html>
@@ -310,7 +1046,10 @@ const html = `
 $done({
     response: {
         status: 200,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+        headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store, max-age=0"
+        },
         body: html
     }
 });
