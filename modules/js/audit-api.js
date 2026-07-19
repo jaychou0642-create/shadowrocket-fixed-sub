@@ -1,4 +1,4 @@
-const VERSION = "2.1.0";
+const VERSION = "2.2.0";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -57,6 +57,7 @@ function fetchUrl(url, options) {
             const status = responseStatus(response);
             resolve({
                 url: url,
+                finalUrl: String((response && (response.url || response.finalUrl)) || url),
                 status: status,
                 ok: !error && status > 0,
                 data: data == null ? "" : data,
@@ -440,6 +441,135 @@ async function collectServices() {
     };
 }
 
+function resultBody(result) {
+    if (!result || result.data == null) return "";
+    return typeof result.data === "string" ? result.data : JSON.stringify(result.data);
+}
+
+function extractRegion(text, patterns) {
+    const source = String(text || "");
+    for (let index = 0; index < patterns.length; index += 1) {
+        const match = source.match(patterns[index]);
+        if (match && match[1]) return String(match[1]).toUpperCase();
+    }
+    return null;
+}
+
+function streamingEntry(result, state, label, region, detail) {
+    return {
+        state: state,
+        label: label,
+        region: region || null,
+        detail: detail || null,
+        status: result.status || 0,
+        ms: result.ms,
+        error: result.error || null
+    };
+}
+
+async function collectStreaming() {
+    const headers = {
+        "User-Agent": BROWSER_UA,
+        "Accept-Language": "en-US,en;q=0.9"
+    };
+    const results = await Promise.all([
+        fetchUrl("https://www.netflix.com/title/81280792", { timeout: 18, headers: headers }),
+        fetchUrl("https://www.netflix.com/title/70143836", { timeout: 18, headers: headers }),
+        fetchUrl("https://www.youtube.com/premium", { timeout: 18, headers: headers }),
+        fetchUrl("https://www.primevideo.com/", { timeout: 18, headers: headers }),
+        fetchUrl("https://www.max.com/", { timeout: 18, headers: headers }),
+        fetchUrl("https://www.disneyplus.com/", { timeout: 18, headers: headers })
+    ]);
+
+    const netflixBodies = [resultBody(results[0]), resultBody(results[1])];
+    const netflixValid = results.slice(0, 2).every(function (result, index) {
+        return result.status >= 200 && result.status < 400 && netflixBodies[index].length > 0;
+    });
+    const netflixRegion = extractRegion(netflixBodies.join("\n"), [
+        /"id"\s*:\s*"([A-Z]{2})"[\s\S]{0,600}?"countryName"\s*:/i,
+        /"countryCode"\s*:\s*"([A-Z]{2})"/i
+    ]);
+    let netflix;
+    if (!netflixValid) {
+        netflix = streamingEntry(results[0], "unknown", "检测失败", netflixRegion, "片库页面响应不完整");
+    } else if (netflixBodies.every(function (body) { return body.indexOf("Oh no!") !== -1; })) {
+        netflix = streamingEntry(results[0], "partial", "仅自制内容", netflixRegion, "两部地区片库样本均受限");
+    } else {
+        netflix = streamingEntry(results[0], "unlocked", "已解锁", netflixRegion, "地区片库样本可访问");
+    }
+
+    const youtubeBody = resultBody(results[2]);
+    const youtubeLower = youtubeBody.toLowerCase();
+    const youtubeRegion = extractRegion(youtubeBody, [/"INNERTUBE_CONTEXT_GL"\s*:\s*"([A-Z]{2})"/i]);
+    let youtube;
+    if (!(results[2].status >= 200 && results[2].status < 400) || !youtubeBody) {
+        youtube = streamingEntry(results[2], "unknown", "检测失败", youtubeRegion, "Premium 页面无有效响应");
+    } else if (youtubeLower.indexOf("premium is not available in your country") !== -1 || youtubeLower.indexOf("www.google.cn") !== -1) {
+        youtube = streamingEntry(results[2], "blocked", "不可用", youtubeRegion || (youtubeLower.indexOf("www.google.cn") !== -1 ? "CN" : null), "当前地区不提供 Premium");
+    } else if (youtubeLower.indexOf("ad-free") !== -1) {
+        youtube = streamingEntry(results[2], "unlocked", "已解锁", youtubeRegion, "Premium 地区页可用");
+    } else {
+        youtube = streamingEntry(results[2], "unknown", "未能判定", youtubeRegion, "页面已响应但未识别解锁标记");
+    }
+
+    const primeBody = resultBody(results[3]);
+    const primeRegion = extractRegion(primeBody, [/"currentTerritory"\s*:\s*"([A-Z]{2})"/i]);
+    let prime;
+    if (!(results[3].status >= 200 && results[3].status < 400) || !primeBody) {
+        prime = streamingEntry(results[3], "unknown", "检测失败", primeRegion, "Prime Video 页面无有效响应");
+    } else if (/"isServiceRestricted"\s*:\s*true/i.test(primeBody)) {
+        prime = streamingEntry(results[3], "blocked", "受限", primeRegion, "当前地区被服务限制");
+    } else if (primeRegion) {
+        prime = streamingEntry(results[3], "unlocked", "已解锁", primeRegion, "已识别服务地区");
+    } else {
+        prime = streamingEntry(results[3], "unknown", "未能判定", null, "页面已响应但未识别地区");
+    }
+
+    const maxBody = resultBody(results[4]);
+    const maxRegion = extractRegion(maxBody, [/countryCode=([A-Z]{2})/i]);
+    const maxSupported = { US: true };
+    const maxRegionPattern = /"url"\s*:\s*"\/([a-z]{2})\/[a-z]{2}/g;
+    let maxMatch;
+    while ((maxMatch = maxRegionPattern.exec(maxBody)) !== null) {
+        maxSupported[String(maxMatch[1]).toUpperCase()] = true;
+    }
+    let max;
+    if (!(results[4].status >= 200 && results[4].status < 400) || !maxBody) {
+        max = streamingEntry(results[4], "unknown", "检测失败", maxRegion, "Max 页面无有效响应");
+    } else if (maxRegion && maxSupported[maxRegion]) {
+        max = streamingEntry(results[4], "unlocked", "已解锁", maxRegion, "当前地区在服务范围内");
+    } else if (maxRegion) {
+        max = streamingEntry(results[4], "blocked", "地区不支持", maxRegion, "已识别地区但不在服务范围内");
+    } else {
+        max = streamingEntry(results[4], "unknown", "未能判定", null, "页面已响应但未识别地区");
+    }
+
+    const disneyBody = resultBody(results[5]);
+    const disneyMarker = (String(results[5].finalUrl || "") + " " + disneyBody).toLowerCase();
+    const disneyRegion = extractRegion(disneyBody, [
+        /"countryCode"\s*:\s*"([A-Z]{2})"/i,
+        /"territory"\s*:\s*"([A-Z]{2})"/i
+    ]);
+    let disney;
+    if (!results[5].status) {
+        disney = streamingEntry(results[5], "unknown", "检测失败", disneyRegion, "Disney+ 入口无响应");
+    } else if (disneyMarker.indexOf("preview.disneyplus.com") !== -1 || disneyMarker.indexOf("not available in your region") !== -1) {
+        disney = streamingEntry(results[5], "blocked", "地区不可用", disneyRegion, "已进入不可用地区页面");
+    } else if (results[5].status >= 200 && results[5].status < 400) {
+        disney = streamingEntry(results[5], "partial", "入口可达", disneyRegion, "需登录和实际播放进一步确认");
+    } else {
+        disney = streamingEntry(results[5], "unknown", "未能判定", disneyRegion, "HTTP " + results[5].status);
+    }
+
+    return {
+        netflix: netflix,
+        youtubePremium: youtube,
+        primeVideo: prime,
+        max: max,
+        disneyPlus: disney
+    };
+}
+
 function signalSummary(exit, reputation) {
     const ipapiFlags = exit.ipapi.flags || {};
     const blackbox = reputation.blackbox || {};
@@ -561,13 +691,15 @@ async function runAudit() {
     const exitPromise = collectExit();
     const latencyPromise = collectLatency();
     const servicesPromise = collectServices();
+    const streamingPromise = collectStreaming();
 
     const exit = await exitPromise;
     const reputationPromise = collectReputation(exit.observedIp || exit.ipv4);
     const latency = await latencyPromise;
-    const auxiliaryResults = await Promise.all([reputationPromise, servicesPromise]);
+    const auxiliaryResults = await Promise.all([reputationPromise, servicesPromise, streamingPromise]);
     const reputation = auxiliaryResults[0];
     const services = auxiliaryResults[1];
+    const streaming = auxiliaryResults[2];
     const bandwidth = await collectBandwidth();
     const assessment = buildAssessment(exit, reputation, services);
 
@@ -587,6 +719,7 @@ async function runAudit() {
         },
         reputation: reputation,
         services: services,
+        streaming: streaming,
         warnings: buildWarnings(exit, reputation, latency, bandwidth)
     };
 }
