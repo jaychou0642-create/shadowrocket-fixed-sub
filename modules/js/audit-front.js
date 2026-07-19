@@ -500,6 +500,10 @@ const html = `
             border-bottom: 1px solid var(--line);
         }
 
+        .bars.has-captions {
+            margin-bottom: 18px;
+        }
+
         .bar-item {
             position: relative;
             display: block;
@@ -529,6 +533,17 @@ const html = `
             inset: 0;
         }
 
+        .bar-caption {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%);
+            color: #688294;
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+
         .bar {
             position: absolute;
             bottom: 0;
@@ -545,6 +560,13 @@ const html = `
             background: linear-gradient(to top, rgba(155, 140, 255, 0.32), var(--violet));
         }
 
+        .bar.google {
+            background: linear-gradient(to top, rgba(97, 230, 167, 0.3), var(--green));
+        }
+
+        #cloudflare-latency-number { color: var(--cyan); }
+        #google-latency-number { color: var(--green); }
+
         .bar.failed {
             background: var(--red);
             opacity: 0.5;
@@ -557,6 +579,15 @@ const html = `
             margin-top: 10px;
             color: var(--muted);
             font-size: 10px;
+        }
+
+        .measure-method {
+            min-height: 14px;
+            margin-top: 8px;
+            color: #688294;
+            font-size: 9px;
+            line-height: 1.45;
+            text-align: center;
         }
 
         .performance-actions {
@@ -700,10 +731,33 @@ const html = `
             background: rgba(6, 15, 24, 0.54);
         }
 
+        .service-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
         .service-name {
             color: #c7d8e2;
             font-size: 12px;
             font-weight: 700;
+        }
+
+        .service-latency {
+            color: var(--cyan);
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 16px;
+            font-weight: 760;
+            letter-spacing: -0.03em;
+            white-space: nowrap;
+        }
+
+        .service-latency small {
+            margin-left: 3px;
+            color: var(--muted);
+            font-size: 8px;
+            font-weight: 500;
         }
 
         .service-state {
@@ -770,7 +824,7 @@ const html = `
 
         @media (min-width: 680px) {
             .shell { padding-left: 24px; padding-right: 24px; }
-            .performance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .performance-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
             .service-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
             .hero { padding: 31px; }
         }
@@ -810,11 +864,11 @@ const html = `
         <section class="hero">
             <p class="eyebrow" id="hero-kicker">FULL PATH AUDIT</p>
             <h1 id="hero-title">看清出口，而不是猜一个“纯净分”</h1>
-            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、8 轮延迟、两次下载测速和五个服务入口验证。</p>
+            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、Cloudflare 与 Google 各 4 轮延迟、渐进下载和五个服务入口验证。</p>
             <div class="hero-meta">
                 <span class="meta-chip" id="meta-profile">完整模式</span>
                 <span class="meta-chip" id="meta-time">尚未检测</span>
-                <span class="meta-chip" id="meta-elapsed">预计流量约 20 MB</span>
+                <span class="meta-chip" id="meta-elapsed">测速流量最高约 41 MB</span>
             </div>
         </section>
 
@@ -831,7 +885,7 @@ const html = `
         </section>
 
         <button class="action" id="run-button" type="button">开始完整检测</button>
-        <div class="action-sub">只读检测 · 不切换节点 · 约 20 MB 下载流量</div>
+        <div class="action-sub">只读检测 · 不切换节点 · 渐进下载最多约 41 MB</div>
         <div class="fatal" id="fatal"></div>
 
         <div class="dashboard is-hidden" id="dashboard">
@@ -865,23 +919,29 @@ const html = `
             <section class="panel">
                 <div class="panel-head">
                     <div><div class="panel-index">03 / PERFORMANCE</div><h2 class="panel-title">链路样本</h2></div>
-                    <div class="panel-note">延迟为 HTTPS 完整请求耗时</div>
+                    <div class="panel-note">Cloudflare / Google 各 4 次 HTTPS 完整请求</div>
                 </div>
                 <div class="performance-grid">
                     <article class="measure">
-                        <div class="measure-top"><span class="measure-name">延迟中位数</span><span class="measure-number" id="latency-number">—<small>ms</small></span></div>
-                        <div class="bars" id="latency-bars"></div>
-                        <div class="measure-foot"><span id="latency-success">—</span><span id="latency-range">—</span></div>
+                        <div class="measure-top"><span class="measure-name">Cloudflare 延迟</span><span class="measure-number" id="cloudflare-latency-number">—<small>ms</small></span></div>
+                        <div class="bars" id="cloudflare-latency-bars"></div>
+                        <div class="measure-foot"><span id="cloudflare-latency-success">—</span><span id="cloudflare-latency-range">—</span></div>
                     </article>
                     <article class="measure">
-                        <div class="measure-top"><span class="measure-name">下载速度中位数</span><span class="measure-number" id="speed-number">—<small>Mbps</small></span></div>
+                        <div class="measure-top"><span class="measure-name">Google 延迟</span><span class="measure-number" id="google-latency-number">—<small>ms</small></span></div>
+                        <div class="bars" id="google-latency-bars"></div>
+                        <div class="measure-foot"><span id="google-latency-success">—</span><span id="google-latency-range">—</span></div>
+                    </article>
+                    <article class="measure">
+                        <div class="measure-top"><span class="measure-name">渐进下载速度</span><span class="measure-number" id="speed-number">—<small>Mbps</small></span></div>
                         <div class="bars" id="speed-bars"></div>
                         <div class="measure-foot"><span id="speed-success">—</span><span id="speed-range">—</span></div>
+                        <div class="measure-method" id="speed-method">1 MB 预热后按需增大数据块</div>
                     </article>
                 </div>
                 <div class="performance-actions">
                     <button class="performance-action" id="performance-button" type="button">重新测试延迟和速度</button>
-                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区结果，不重复检测 IP、信誉和服务入口</div>
+                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区结果 · 渐进下载最多约 41 MB</div>
                 </div>
             </section>
 
@@ -924,8 +984,8 @@ const html = `
             var stages = [
                 { at: 8, text: "建立出口快照" },
                 { at: 24, text: "查询公开信誉源" },
-                { at: 42, text: "运行 8 轮 HTTPS 延迟" },
-                { at: 60, text: "执行两次下载测速" },
+                { at: 42, text: "Cloudflare / Google 各运行 4 轮延迟" },
+                { at: 60, text: "执行渐进下载测速" },
                 { at: 76, text: "验证服务入口" },
                 { at: 90, text: "汇总结论矩阵" }
             ];
@@ -1004,8 +1064,9 @@ const html = `
                 updateProgress(success ? 100 : progress, success ? "检测完成，报告已生成" : "检测未完成");
             }
 
-            function renderBars(containerId, samples, valueKey, extraClass) {
+            function renderBars(containerId, samples, valueKey, extraClass, captionKey) {
                 var container = byId(containerId);
+                container.classList.toggle("has-captions", !!captionKey);
                 var values = (samples || []).map(function (sample) {
                     return sample && sample.ok && sample[valueKey] != null ? Number(sample[valueKey]) : 0;
                 });
@@ -1020,9 +1081,11 @@ const html = `
                         : "×";
                     var unit = valueKey === "mbps" ? " Mbps" : " ms";
                     var title = ok ? displayValue + unit : "失败";
+                    var caption = captionKey && sample && sample[captionKey] ? '<span class="bar-caption">' + escapeHtml(sample[captionKey]) + '</span>' : "";
                     return '<span class="bar-item" style="--bar-height:' + ratio + '%" title="' + escapeHtml(title) + '">' +
                         '<span class="bar-value">' + escapeHtml(displayValue) + '</span>' +
                         '<span class="bar-track"><span class="' + className + '"></span></span>' +
+                        caption +
                         '</span>';
                 }).join("");
             }
@@ -1082,19 +1145,45 @@ const html = `
                 text("hero-copy", assessment.verdict || "检测完成，详细结果见下方。 ");
             }
 
+            function latencyTarget(latency, id) {
+                var targets = latency.targets || [];
+                for (var index = 0; index < targets.length; index += 1) {
+                    if (targets[index] && targets[index].id === id) return targets[index];
+                }
+                if (id === "cloudflare" && latency.samples) {
+                    return {
+                        rounds: latency.rounds,
+                        success: latency.success,
+                        samples: latency.samples,
+                        medianMs: latency.medianMs,
+                        minimumMs: latency.minimumMs,
+                        maximumMs: latency.maximumMs
+                    };
+                }
+                return {};
+            }
+
+            function renderLatencyTarget(prefix, target) {
+                target = target || {};
+                byId(prefix + "-latency-number").innerHTML = escapeHtml(target.medianMs == null ? "—" : target.medianMs) + "<small>ms</small>";
+                renderBars(prefix + "-latency-bars", target.samples || [], "ms", prefix === "google" ? "google" : "", null);
+                text(prefix + "-latency-success", "成功 " + (target.success || 0) + "/" + (target.rounds || 0));
+                text(prefix + "-latency-range", target.minimumMs == null ? "无有效样本" : "范围 " + target.minimumMs + "–" + target.maximumMs + " ms");
+            }
+
             function renderPerformance(data) {
                 var performance = data.performance || {};
                 var latency = performance.latency || {};
                 var bandwidth = performance.bandwidth || {};
-                byId("latency-number").innerHTML = escapeHtml(latency.medianMs == null ? "—" : latency.medianMs) + "<small>ms</small>";
+                renderLatencyTarget("cloudflare", latencyTarget(latency, "cloudflare"));
+                renderLatencyTarget("google", latencyTarget(latency, "google"));
                 byId("speed-number").innerHTML = escapeHtml(bandwidth.medianMbps == null ? "—" : bandwidth.medianMbps) + "<small>Mbps</small>";
-                renderBars("latency-bars", latency.samples || [], "ms", "");
-                renderBars("speed-bars", bandwidth.samples || [], "mbps", "speed");
-                text("latency-success", "成功 " + (latency.success || 0) + "/" + (latency.rounds || 0));
-                text("latency-range", latency.minimumMs == null ? "无有效样本" : "范围 " + latency.minimumMs + "–" + latency.maximumMs + " ms");
+                renderBars("speed-bars", bandwidth.samples || [], "mbps", "speed", "sizeLabel");
                 var speedSamples = (bandwidth.samples || []).filter(function (sample) { return sample.ok; }).length;
                 text("speed-success", "成功 " + speedSamples + "/" + (bandwidth.runs || 0));
                 text("speed-range", bandwidth.minimumMbps == null ? "无有效样本" : "范围 " + bandwidth.minimumMbps + "–" + bandwidth.maximumMbps + " Mbps");
+                var traffic = bandwidth.approximateTrafficMb == null ? "流量未知" : "本次约 " + bandwidth.approximateTrafficMb + " MB";
+                text("speed-method", "1 MB 预热 · 5 → 10 → 25 MB 按需执行 · " + traffic);
             }
 
             function renderReputation(data) {
@@ -1136,10 +1225,15 @@ const html = `
                     var tone = item.state === "reachable" ? "success" : (item.state === "error" ? "danger" : "warning");
                     var meta = [];
                     if (item.status) meta.push("HTTP " + item.status);
-                    if (item.ms != null) meta.push(item.ms + " ms");
-                    if (item.detail) meta.push(item.detail);
+                    if (item.detail) {
+                        var detail = String(item.detail);
+                        var statusToken = "HTTP " + item.status;
+                        if (detail !== statusToken && detail.slice(-statusToken.length) === statusToken) detail = detail.slice(0, -statusToken.length).trim();
+                        if (detail && detail !== statusToken) meta.push(detail);
+                    }
+                    var latency = item.ms != null && item.status ? '<span class="service-latency">' + escapeHtml(item.ms) + '<small>ms</small></span>' : "";
                     return '<article class="service">' +
-                        '<div class="service-name">' + escapeHtml(definition[0]) + '</div>' +
+                        '<div class="service-head"><div class="service-name">' + escapeHtml(definition[0]) + '</div>' + latency + '</div>' +
                         '<div class="service-state ' + toneClass(tone) + '">' + escapeHtml(item.label || "未知") + '</div>' +
                         '<div class="service-meta">' + escapeHtml(meta.join(" · ") || item.error || "无数据") + '</div>' +
                         '</article>';
@@ -1216,7 +1310,7 @@ const html = `
                 button.disabled = true;
                 performanceButton.textContent = "正在重新测速…";
                 byId("performance-status").classList.remove("error");
-                text("performance-status", "正在运行原有的延迟与下载测速，请稍候");
+                text("performance-status", "正在测试 Cloudflare / Google 延迟并执行渐进下载，请稍候");
                 document.body.classList.remove("is-ready");
                 document.body.classList.add("is-running");
                 text("live-text", "性能重测中");
