@@ -637,7 +637,8 @@ const html = `
         }
 
         .source-list,
-        .service-grid {
+        .service-grid,
+        .streaming-grid {
             display: grid;
             gap: 9px;
             padding: 0 14px 14px;
@@ -719,7 +720,8 @@ const html = `
             color: #ffd58a;
         }
 
-        .service-grid {
+        .service-grid,
+        .streaming-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
@@ -758,6 +760,21 @@ const html = `
             color: var(--muted);
             font-size: 8px;
             font-weight: 500;
+        }
+
+        .streaming-region {
+            display: inline-flex;
+            align-items: center;
+            min-height: 23px;
+            padding: 3px 8px;
+            border: 1px solid rgba(104, 225, 255, 0.25);
+            border-radius: 999px;
+            background: rgba(104, 225, 255, 0.08);
+            color: #a8d9e9;
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 9px;
+            font-weight: 720;
+            white-space: nowrap;
         }
 
         .service-state {
@@ -825,13 +842,15 @@ const html = `
         @media (min-width: 680px) {
             .shell { padding-left: 24px; padding-right: 24px; }
             .performance-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .service-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .service-grid,
+            .streaming-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
             .hero { padding: 31px; }
         }
 
         @media (max-width: 430px) {
             .hero { padding: 21px 18px; border-radius: 24px; }
             .matrix { grid-template-columns: 1fr; }
+            .streaming-grid { grid-template-columns: 1fr; }
             .signal { min-height: 106px; }
             .panel-note { display: none; }
             .source { grid-template-columns: 1fr; gap: 6px; }
@@ -864,7 +883,7 @@ const html = `
         <section class="hero">
             <p class="eyebrow" id="hero-kicker">FULL PATH AUDIT</p>
             <h1 id="hero-title">看清出口，而不是猜一个“纯净分”</h1>
-            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、Cloudflare 与 Google 各 4 轮延迟、渐进下载和五个服务入口验证。</p>
+            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、Cloudflare 与 Google 各 4 轮延迟、渐进下载、服务入口与流媒体地区检测。</p>
             <div class="hero-meta">
                 <span class="meta-chip" id="meta-profile">完整模式</span>
                 <span class="meta-chip" id="meta-time">尚未检测</span>
@@ -874,17 +893,18 @@ const html = `
 
         <section class="scan" aria-live="polite">
             <div class="scan-head">
-                <span class="scan-label" id="scan-label">点击开始后，将通过当前节点执行只读检测</span>
+                <span class="scan-label" id="scan-label">页面已打开，将通过当前节点自动执行只读检测</span>
                 <span id="scan-percent">0%</span>
             </div>
             <div class="track"><div class="track-fill" id="track-fill"></div></div>
             <div class="scan-steps" id="scan-steps">
                 <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
                 <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
+                <span class="step-dot"></span>
             </div>
         </section>
 
-        <button class="action" id="run-button" type="button">开始完整检测</button>
+        <button class="action" id="run-button" type="button">正在准备完整检测…</button>
         <div class="action-sub">只读检测 · 不切换节点 · 渐进下载最多约 41 MB</div>
         <div class="fatal" id="fatal"></div>
 
@@ -941,7 +961,7 @@ const html = `
                 </div>
                 <div class="performance-actions">
                     <button class="performance-action" id="performance-button" type="button">重新测试延迟和速度</button>
-                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区结果 · 渐进下载最多约 41 MB</div>
+                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区；出口、信誉、服务和流媒体结果保持不变</div>
                 </div>
             </section>
 
@@ -967,10 +987,18 @@ const html = `
                 </div>
                 <div class="service-grid" id="service-grid"></div>
             </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div><div class="panel-index">06 / STREAMING</div><h2 class="panel-title">流媒体解锁</h2></div>
+                    <div class="panel-note">页面级地区探测，不验证账号、DRM 或实际播放</div>
+                </div>
+                <div class="streaming-grid" id="streaming-grid"></div>
+            </section>
         </div>
 
         <aside class="warnings" id="warnings"><strong>本次检测备注</strong><ul id="warning-list"></ul></aside>
-        <footer class="method">判读原则：托管/数据中心身份不等于恶意 IP；代理/VPN 信号与网络身份是两个维度；单个信誉源未命中不代表绝对干净；ChatGPT 挑战页和 OpenAI API 的未授权响应只能证明入口已到达。</footer>
+        <footer class="method">判读原则：托管/数据中心身份不等于恶意 IP；代理/VPN 信号与网络身份是两个维度；单个信誉源未命中不代表绝对干净；服务入口响应只证明网络可达；流媒体结果来自公开页面和地区标记，不验证账号权限、DRM 或实际播放。</footer>
     </main>
 
     <script>
@@ -983,11 +1011,12 @@ const html = `
             var progress = 0;
             var stages = [
                 { at: 8, text: "建立出口快照" },
-                { at: 24, text: "查询公开信誉源" },
-                { at: 42, text: "Cloudflare / Google 各运行 4 轮延迟" },
-                { at: 60, text: "执行渐进下载测速" },
-                { at: 76, text: "验证服务入口" },
-                { at: 90, text: "汇总结论矩阵" }
+                { at: 22, text: "查询公开信誉源" },
+                { at: 38, text: "Cloudflare / Google 各运行 4 轮延迟" },
+                { at: 52, text: "检测流媒体地区权限" },
+                { at: 66, text: "执行渐进下载测速" },
+                { at: 80, text: "验证服务入口" },
+                { at: 91, text: "汇总结论矩阵" }
             ];
 
             function byId(id) {
@@ -1240,6 +1269,31 @@ const html = `
                 }).join("");
             }
 
+            function renderStreaming(data) {
+                var streaming = data.streaming || {};
+                var definitions = [
+                    ["Netflix", streaming.netflix],
+                    ["YouTube Premium", streaming.youtubePremium],
+                    ["Prime Video", streaming.primeVideo],
+                    ["Max", streaming.max],
+                    ["Disney+", streaming.disneyPlus]
+                ];
+                byId("streaming-grid").innerHTML = definitions.map(function (definition) {
+                    var item = definition[1] || {};
+                    var tone = item.state === "unlocked" ? "success" : (item.state === "blocked" ? "danger" : (item.state === "partial" ? "warning" : "neutral"));
+                    var meta = [];
+                    if (item.status) meta.push("HTTP " + item.status);
+                    if (item.ms != null && item.status) meta.push(item.ms + " ms");
+                    if (item.detail) meta.push(item.detail);
+                    var region = '<span class="streaming-region">' + escapeHtml(item.region || "地区待定") + '</span>';
+                    return '<article class="service">' +
+                        '<div class="service-head"><div class="service-name">' + escapeHtml(definition[0]) + '</div>' + region + '</div>' +
+                        '<div class="service-state ' + toneClass(tone) + '">' + escapeHtml(item.label || "未知") + '</div>' +
+                        '<div class="service-meta">' + escapeHtml(meta.join(" · ") || item.error || "无数据") + '</div>' +
+                        '</article>';
+                }).join("");
+            }
+
             function renderWarnings(data) {
                 var warnings = data.warnings || [];
                 var box = byId("warnings");
@@ -1264,6 +1318,7 @@ const html = `
                 renderPerformance(data);
                 renderReputation(data);
                 renderServices(data);
+                renderStreaming(data);
                 renderWarnings(data);
                 dashboard.classList.remove("is-hidden");
                 document.body.classList.remove("is-running");
@@ -1344,6 +1399,7 @@ const html = `
 
             button.addEventListener("click", run);
             performanceButton.addEventListener("click", rerunPerformance);
+            run();
         }());
     </script>
 </body>
