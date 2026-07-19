@@ -850,6 +850,7 @@ const html = `
         @media (max-width: 430px) {
             .hero { padding: 21px 18px; border-radius: 24px; }
             .matrix { grid-template-columns: 1fr; }
+            .service-grid,
             .streaming-grid { grid-template-columns: 1fr; }
             .signal { min-height: 106px; }
             .panel-note { display: none; }
@@ -883,7 +884,7 @@ const html = `
         <section class="hero">
             <p class="eyebrow" id="hero-kicker">FULL PATH AUDIT</p>
             <h1 id="hero-title">看清出口，而不是猜一个“纯净分”</h1>
-            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、Cloudflare 与 Google 各 4 轮延迟、渐进下载、服务入口与流媒体地区检测。</p>
+            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、Cloudflare 与 Google 各 4 轮延迟、渐进下载、常用 AI 入口与流媒体地区检测。</p>
             <div class="hero-meta">
                 <span class="meta-chip" id="meta-profile">完整模式</span>
                 <span class="meta-chip" id="meta-time">尚未检测</span>
@@ -961,7 +962,7 @@ const html = `
                 </div>
                 <div class="performance-actions">
                     <button class="performance-action" id="performance-button" type="button">重新测试延迟和速度</button>
-                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区；出口、信誉、服务和流媒体结果保持不变</div>
+                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区；出口、信誉、AI 和流媒体结果保持不变</div>
                 </div>
             </section>
 
@@ -982,8 +983,8 @@ const html = `
 
             <section class="panel">
                 <div class="panel-head">
-                    <div><div class="panel-index">05 / SERVICES</div><h2 class="panel-title">服务入口</h2></div>
-                    <div class="panel-note">入口响应不代表账号或模型可用</div>
+                    <div><div class="panel-index">05 / AI SERVICES</div><h2 class="panel-title">AI 服务</h2></div>
+                    <div class="panel-note">入口响应不代表账号、订阅或模型可用</div>
                 </div>
                 <div class="service-grid" id="service-grid"></div>
             </section>
@@ -998,7 +999,7 @@ const html = `
         </div>
 
         <aside class="warnings" id="warnings"><strong>本次检测备注</strong><ul id="warning-list"></ul></aside>
-        <footer class="method">判读原则：托管/数据中心身份不等于恶意 IP；代理/VPN 信号与网络身份是两个维度；单个信誉源未命中不代表绝对干净；服务入口响应只证明网络可达；流媒体结果来自公开页面和地区标记，不验证账号权限、DRM 或实际播放。</footer>
+        <footer class="method">判读原则：托管/数据中心身份不等于恶意 IP；代理/VPN 信号与网络身份是两个维度；单个信誉源未命中不代表绝对干净；AI 入口响应只证明网络可达；流媒体结果来自公开页面和地区标记，不验证账号权限、DRM 或实际播放。</footer>
     </main>
 
     <script>
@@ -1015,7 +1016,7 @@ const html = `
                 { at: 38, text: "Cloudflare / Google 各运行 4 轮延迟" },
                 { at: 52, text: "检测流媒体地区权限" },
                 { at: 66, text: "执行渐进下载测速" },
-                { at: 80, text: "验证服务入口" },
+                { at: 80, text: "验证常用 AI 入口" },
                 { at: 91, text: "汇总结论矩阵" }
             ];
 
@@ -1240,14 +1241,16 @@ const html = `
                 text("rep-github", rate.available ? (rate.remaining + "/" + rate.limit + " remaining") : "数据源不可用");
             }
 
-            function renderServices(data) {
+            function renderAiServices(data) {
                 var services = data.services || {};
                 var definitions = [
-                    ["Cloudflare", services.cloudflare],
-                    ["Google", services.google],
                     ["ChatGPT", services.chatgpt],
                     ["OpenAI API", services.openai],
-                    ["GitHub API", services.github]
+                    ["Claude", services.claude],
+                    ["Gemini", services.gemini],
+                    ["Grok", services.grok],
+                    ["Perplexity", services.perplexity],
+                    ["Microsoft Copilot", services.copilot]
                 ];
                 byId("service-grid").innerHTML = definitions.map(function (definition) {
                     var item = definition[1] || {};
@@ -1317,7 +1320,7 @@ const html = `
                 renderAssessment(data);
                 renderPerformance(data);
                 renderReputation(data);
-                renderServices(data);
+                renderAiServices(data);
                 renderStreaming(data);
                 renderWarnings(data);
                 dashboard.classList.remove("is-hidden");
