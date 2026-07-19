@@ -1233,7 +1233,8 @@ const html = `
 
                 byId("rep-ipapi").innerHTML = exit.ipapi && exit.ipapi.available ? renderIpapiSignals(exit.ipapi.flags) : "数据源不可用";
                 byId("rep-blackbox").innerHTML = blackbox.available
-                    ? '<span class="source-summary">' + escapeHtml(blackbox.classification || "unknown") + '</span>' + signalTags([
+                    ? signalTags([
+                        ["机房", blackbox.classification ? /hosting|datacenter/i.test(blackbox.classification) : null, true],
                         ["PROXY", blackboxSignals.proxy, false],
                         ["可疑", blackbox.suspicious, false],
                         ["Spamhaus", blackboxSignals.spamhaus, false]
