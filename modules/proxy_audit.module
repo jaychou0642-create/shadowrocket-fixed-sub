@@ -1,0 +1,12 @@
+#!name= 代理节点完整检测 (本地探针)
+#!desc= 访问 https://audit.test 进行 IP 与 AI 服务连通性检测
+
+[Script]
+# 前端页面
+Audit-FrontEnd = type=http-request, pattern=^https:\/\/audit\.test\/?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-front.js, timeout=60
+
+# API 检测接口
+Audit-API = type=http-request, pattern=^https:\/\/audit\.test\/api\/?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-api.js, timeout=60
+
+[MITM]
+hostname = %APPEND% audit.test
