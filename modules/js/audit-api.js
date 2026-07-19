@@ -1,4 +1,4 @@
-const VERSION = "2.2.0";
+const VERSION = "2.3.0";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -375,65 +375,76 @@ function serviceEntry(result, state, label, detail) {
     };
 }
 
+function aiWebsiteEntry(result) {
+    if (result.status >= 200 && result.status < 400) {
+        return serviceEntry(result, "reachable", "入口可达", "HTTP " + result.status);
+    }
+    if (result.status === 401) {
+        return serviceEntry(result, "warning", "已到达·需登录", "HTTP 401");
+    }
+    if (result.status === 403) {
+        const challenged = result.headers["cf-mitigated"] === "challenge";
+        return serviceEntry(result, "warning", challenged ? "已到达·挑战页" : "已到达·HTTP 403", "可能为登录、风控或地区限制");
+    }
+    if (result.status > 0) {
+        return serviceEntry(result, "warning", "已响应", "HTTP " + result.status);
+    }
+    return serviceEntry(result, "error", "传输失败", result.error);
+}
+
 async function collectServices() {
+    const browserHeaders = {
+        "User-Agent": BROWSER_UA,
+        "Accept-Language": "en-US,en;q=0.9"
+    };
     const results = await Promise.all([
-        fetchUrl("https://www.cloudflare.com/cdn-cgi/trace", { timeout: 12 }),
-        fetchUrl("https://www.google.com/generate_204", { timeout: 12 }),
-        fetchUrl("https://chatgpt.com/", { timeout: 15, headers: { "User-Agent": BROWSER_UA } }),
+        fetchUrl("https://chatgpt.com/", { timeout: 15, headers: browserHeaders }),
         fetchUrl("https://api.openai.com/v1/models", { timeout: 12 }),
         fetchUrl("https://api.github.com/rate_limit", {
             timeout: 12,
             headers: { "User-Agent": "Shadowrocket-Proxy-Audit/" + VERSION, "Accept": "application/vnd.github+json" }
-        })
+        }),
+        fetchUrl("https://claude.ai/", { timeout: 15, headers: browserHeaders }),
+        fetchUrl("https://gemini.google.com/", { timeout: 15, headers: browserHeaders }),
+        fetchUrl("https://grok.com/", { timeout: 15, headers: browserHeaders }),
+        fetchUrl("https://www.perplexity.ai/", { timeout: 15, headers: browserHeaders }),
+        fetchUrl("https://copilot.microsoft.com/", { timeout: 15, headers: browserHeaders })
     ]);
 
-    const cloudflare = results[0].status === 200
-        ? serviceEntry(results[0], "reachable", "可达", "HTTP 200")
-        : serviceEntry(results[0], "error", "传输失败", results[0].error || "HTTP " + results[0].status);
-
-    const google = results[1].status === 204
-        ? serviceEntry(results[1], "reachable", "可达", "HTTP 204")
-        : (results[1].status > 0
-            ? serviceEntry(results[1], "warning", "已响应", "HTTP " + results[1].status)
-            : serviceEntry(results[1], "error", "传输失败", results[1].error));
-
     let chatgpt;
-    if (results[2].status >= 200 && results[2].status < 400) {
-        chatgpt = serviceEntry(results[2], "reachable", "入口可达", "HTTP " + results[2].status);
-    } else if (results[2].status === 403) {
-        const challenged = results[2].headers["cf-mitigated"] === "challenge";
-        chatgpt = serviceEntry(results[2], "warning", challenged ? "已到达·挑战页" : "已到达·HTTP 403", "不代表账号或模型不可用");
-    } else if (results[2].status > 0) {
-        chatgpt = serviceEntry(results[2], "warning", "已响应", "HTTP " + results[2].status);
+    if (results[0].status >= 200 && results[0].status < 400) {
+        chatgpt = serviceEntry(results[0], "reachable", "入口可达", "HTTP " + results[0].status);
+    } else if (results[0].status === 403) {
+        const challenged = results[0].headers["cf-mitigated"] === "challenge";
+        chatgpt = serviceEntry(results[0], "warning", challenged ? "已到达·挑战页" : "已到达·HTTP 403", "不代表账号或模型不可用");
+    } else if (results[0].status > 0) {
+        chatgpt = serviceEntry(results[0], "warning", "已响应", "HTTP " + results[0].status);
     } else {
-        chatgpt = serviceEntry(results[2], "error", "传输失败", results[2].error);
+        chatgpt = serviceEntry(results[0], "error", "传输失败", results[0].error);
     }
 
     let openai;
-    if (results[3].status === 401) {
-        openai = serviceEntry(results[3], "reachable", "已到认证层", "未带 API Key 的预期响应");
-    } else if (results[3].status >= 200 && results[3].status < 500) {
-        openai = serviceEntry(results[3], "warning", "已响应", "HTTP " + results[3].status);
+    if (results[1].status === 401) {
+        openai = serviceEntry(results[1], "reachable", "已到认证层", "未带 API Key 的预期响应");
+    } else if (results[1].status >= 200 && results[1].status < 500) {
+        openai = serviceEntry(results[1], "warning", "已响应", "HTTP " + results[1].status);
     } else {
-        openai = serviceEntry(results[3], "error", "传输失败", results[3].error || "HTTP " + results[3].status);
+        openai = serviceEntry(results[1], "error", "传输失败", results[1].error || "HTTP " + results[1].status);
     }
 
-    const githubData = parseJson(results[4]) || {};
+    const githubData = parseJson(results[2]) || {};
     const githubCore = ((githubData.resources || {}).core || {});
-    const github = results[4].status === 200
-        ? serviceEntry(results[4], "reachable", "API 可达", "HTTP 200")
-        : (results[4].status > 0
-            ? serviceEntry(results[4], "warning", "已响应", "HTTP " + results[4].status)
-            : serviceEntry(results[4], "error", "传输失败", results[4].error));
 
     return {
-        cloudflare: cloudflare,
-        google: google,
         chatgpt: chatgpt,
         openai: openai,
-        github: github,
+        claude: aiWebsiteEntry(results[3]),
+        gemini: aiWebsiteEntry(results[4]),
+        grok: aiWebsiteEntry(results[5]),
+        perplexity: aiWebsiteEntry(results[6]),
+        copilot: aiWebsiteEntry(results[7]),
         githubAnonymousCoreRate: {
-            available: results[4].status === 200 && githubCore.limit != null,
+            available: results[2].status === 200 && githubCore.limit != null,
             remaining: numberOrNull(githubCore.remaining),
             limit: numberOrNull(githubCore.limit),
             reset: numberOrNull(githubCore.reset)
