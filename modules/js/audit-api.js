@@ -1,4 +1,4 @@
-const VERSION = "2.3.0";
+const VERSION = "2.4.0";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -621,7 +621,66 @@ function signalSummary(exit, reputation) {
     return { proxyExit: proxyExit, detectability: detectability };
 }
 
-function buildAssessment(exit, reputation, services) {
+function summarizeAiServices(services) {
+    const keys = ["chatgpt", "openai", "claude", "gemini", "grok", "perplexity", "copilot"];
+    const items = keys.map(function (key) { return services[key]; }).filter(function (item) { return !!item; });
+    if (!items.length) return { code: "unknown", label: "未知", tone: "neutral", detail: "没有 AI 入口检测结果" };
+
+    const reachable = items.filter(function (item) { return item.state === "reachable"; }).length;
+    const restricted = items.filter(function (item) { return item.state === "warning"; }).length;
+    const failed = items.filter(function (item) { return item.state === "error" || !item.status; }).length;
+    const responded = items.length - failed;
+    let tone = "warning";
+    if (reachable === items.length) tone = "success";
+    else if (!responded) tone = "danger";
+
+    return {
+        code: responded ? (reachable === items.length ? "reachable" : "mixed") : "unreachable",
+        label: responded ? responded + "/" + items.length + " 入口有响应" : "入口均失败",
+        tone: tone,
+        detail: reachable + " 可达 · " + restricted + " 认证/挑战 · " + failed + " 失败；不验证模型调用"
+    };
+}
+
+function summarizeStreaming(streaming) {
+    const keys = ["netflix", "youtubePremium", "primeVideo", "max", "disneyPlus"];
+    const items = keys.map(function (key) { return streaming[key]; }).filter(function (item) { return !!item; });
+    if (!items.length) return { code: "unknown", label: "未知", tone: "neutral", detail: "没有流媒体检测结果" };
+
+    const unlocked = items.filter(function (item) { return item.state === "unlocked"; }).length;
+    const partial = items.filter(function (item) { return item.state === "partial"; }).length;
+    const blocked = items.filter(function (item) { return item.state === "blocked"; }).length;
+    const unknown = items.length - unlocked - partial - blocked;
+    let label = "结果未知";
+    let tone = "neutral";
+    let code = "unknown";
+    if (unlocked === items.length) {
+        label = unlocked + "/" + items.length + " 已解锁";
+        tone = "success";
+        code = "unlocked";
+    } else if (unlocked > 0) {
+        label = unlocked + "/" + items.length + " 已解锁";
+        tone = "warning";
+        code = "mixed";
+    } else if (partial > 0) {
+        label = "未确认完整解锁";
+        tone = "warning";
+        code = "partial";
+    } else if (blocked === items.length) {
+        label = "均受限";
+        tone = "danger";
+        code = "blocked";
+    }
+
+    return {
+        code: code,
+        label: label,
+        tone: tone,
+        detail: partial + " 待确认 · " + blocked + " 受限 · " + unknown + " 未知；页面级判断"
+    };
+}
+
+function buildAssessment(exit, reputation, services, streaming) {
     const ipqueryRisk = ((reputation.ipquery || {}).risk || {});
     const companyType = String(exit.companyType || "").toLowerCase();
     let networkIdentity;
@@ -668,6 +727,8 @@ function buildAssessment(exit, reputation, services) {
         sharingPressure = { code: "low-signal", label: "未见明显共享压力", tone: "success", detail: "GitHub 匿名额度 " + rate.remaining + "/" + rate.limit };
     }
 
+    const aiServices = summarizeAiServices(services || {});
+    const streamingAccess = summarizeStreaming(streaming || {});
     const verdict = networkIdentity.label + "；" + signals.proxyExit.label + "；" + threatHistory.label + "；共享压力" + sharingPressure.label + "。";
     return {
         networkIdentity: networkIdentity,
@@ -675,6 +736,8 @@ function buildAssessment(exit, reputation, services) {
         proxyDetectability: signals.detectability,
         threatHistory: threatHistory,
         sharingPressure: sharingPressure,
+        aiServices: aiServices,
+        streamingAccess: streamingAccess,
         verdict: verdict
     };
 }
@@ -712,7 +775,7 @@ async function runAudit() {
     const services = auxiliaryResults[1];
     const streaming = auxiliaryResults[2];
     const bandwidth = await collectBandwidth();
-    const assessment = buildAssessment(exit, reputation, services);
+    const assessment = buildAssessment(exit, reputation, services, streaming);
 
     return {
         meta: {
