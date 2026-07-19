@@ -2,7 +2,7 @@
 function fetchUrl(url, headers = {}) {
     return new Promise((resolve) => {
         const start = Date.now();
-        $httpClient.get({ url: url, headers: headers, timeout: 5 }, (error, response, data) => {
+        $httpClient.get({ url: url, headers: headers, timeout: 8 }, (error, response, data) => {
             const ms = Date.now() - start;
             if (error) {
                 resolve({ error: error, ms: ms });
@@ -17,13 +17,13 @@ async function runAudit() {
     let result = {
         ipInfo: null,
         aiStatus: {
-            chatgptWeb: "检测中...",
-            chatgptApp: "检测中...",
-            gemini: "检测中..."
+            chatgptWeb: { status: 'pending' },
+            chatgptApp: { status: 'pending' },
+            gemini: { status: 'pending' }
         }
     };
 
-    // 1. 测试 IP 信息 (复用你之前的 ip-api)
+    // 1. IP (ip-api)
     const ipRes = await fetchUrl("http://ip-api.com/json?fields=status,message,country,city,isp,org,proxy,hosting,query");
     if (ipRes.data) {
         try {
@@ -32,57 +32,55 @@ async function runAudit() {
                 result.ipInfo = {
                     ip: ipData.query,
                     country: ipData.country,
-                    city: ipData.city,
-                    isp: ipData.isp,
+                    city: ipData.city || '',
+                    isp: ipData.isp || ipData.org,
                     org: ipData.org,
                     proxy: ipData.proxy,
                     hosting: ipData.hosting
                 };
             }
         } catch (e) {
-            console.log("IP JSON parse error");
+            // ignore
         }
     }
 
-    // 2. 测试 ChatGPT Web (chatgpt.com)
-    // 简单的 403 检查 (基于之前代理检测的经验)
+    // 2. ChatGPT Web (基于 HTTP 403 拦截特征)
     const cgWebRes = await fetchUrl("https://chatgpt.com/", {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     });
     if (cgWebRes.error) {
-        result.aiStatus.chatgptWeb = `❌ 失败 (${cgWebRes.error})`;
+        result.aiStatus.chatgptWeb = { status: 'error', error: cgWebRes.error };
     } else if (cgWebRes.status === 403) {
-        result.aiStatus.chatgptWeb = `❌ 拒绝访问 (403, 被阻断)`;
+        result.aiStatus.chatgptWeb = { status: 'blocked', ms: cgWebRes.ms };
     } else {
-        result.aiStatus.chatgptWeb = `✅ 可用 (${cgWebRes.ms}ms)`;
+        result.aiStatus.chatgptWeb = { status: 'success', ms: cgWebRes.ms };
     }
 
-    // 3. 测试 ChatGPT App (ios.chat.openai.com / ab.chatgpt.com)
+    // 3. ChatGPT App (ios.chat.openai.com)
     const cgAppRes = await fetchUrl("https://ios.chat.openai.com/public-api/mobile/server_status/v1", {
         "User-Agent": "ChatGPT/1.0.0 CFNetwork/1408.0.4 Darwin/22.5.0"
     });
     if (cgAppRes.error) {
-        result.aiStatus.chatgptApp = `❌ 失败 (${cgAppRes.error})`;
+        result.aiStatus.chatgptApp = { status: 'error', error: cgAppRes.error };
     } else if (cgAppRes.status === 403) {
-        result.aiStatus.chatgptApp = `❌ 拒绝访问 (403)`;
+        result.aiStatus.chatgptApp = { status: 'blocked', ms: cgAppRes.ms };
     } else {
-        result.aiStatus.chatgptApp = `✅ 可用 (${cgAppRes.status}, ${cgAppRes.ms}ms)`;
+        result.aiStatus.chatgptApp = { status: 'success', ms: `${cgAppRes.status}, ${cgAppRes.ms}` };
     }
 
-    // 4. 测试 Gemini (gemini.google.com)
+    // 4. Gemini (gemini.google.com)
     const geminiRes = await fetchUrl("https://gemini.google.com/", {
          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
     });
     if (geminiRes.error) {
-        result.aiStatus.gemini = `❌ 失败 (${geminiRes.error})`;
+        result.aiStatus.gemini = { status: 'error', error: geminiRes.error };
     } else {
-        // 简单检测是否包含不支持区域的文本
         if (geminiRes.data && (geminiRes.data.includes("not available in your country") || geminiRes.data.includes("isn't currently supported in your country"))) {
-             result.aiStatus.gemini = `❌ 区域不支持`;
+             result.aiStatus.gemini = { status: 'blocked', ms: '区域受限' };
         } else if (geminiRes.status >= 400) {
-             result.aiStatus.gemini = `❌ 错误 (${geminiRes.status})`;
+             result.aiStatus.gemini = { status: 'blocked', ms: geminiRes.status };
         } else {
-             result.aiStatus.gemini = `✅ 可用 (${geminiRes.ms}ms)`;
+             result.aiStatus.gemini = { status: 'success', ms: geminiRes.ms };
         }
     }
 

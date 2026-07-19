@@ -4,32 +4,18 @@ const html = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>代理节点完整检测</title>
+    <title>节点检测报告</title>
     <style>
         :root {
-            --bg-color: #f7f7f7;
-            --surface: #ffffff;
-            --text-primary: #1d1d1f;
+            --bg-color: #000000;
+            --surface: #1c1c1e;
+            --text-primary: #f5f5f7;
             --text-secondary: #86868b;
-            --border: #e5e5ea;
-            --blue: #007aff;
-            --green: #34c759;
-            --red: #ff3b30;
-            --orange: #ff9500;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #000000;
-                --surface: #1c1c1e;
-                --text-primary: #f5f5f7;
-                --text-secondary: #86868b;
-                --border: #38383a;
-                --blue: #0a84ff;
-                --green: #30d158;
-                --red: #ff453a;
-                --orange: #ff9f0a;
-            }
+            --border: #38383a;
+            --blue: #0a84ff;
+            --green: #30d158;
+            --red: #ff453a;
+            --orange: #ff9f0a;
         }
 
         body {
@@ -43,39 +29,39 @@ const html = `
 
         .header {
             padding: 32px 20px 16px;
+            text-align: center;
         }
 
         h1 {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 600;
             margin: 0;
             letter-spacing: 0.5px;
         }
 
-        .subtitle {
+        .section-title {
             font-size: 13px;
             color: var(--text-secondary);
-            margin-top: 4px;
+            margin: 24px 20px 8px;
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 500;
             letter-spacing: 0.5px;
         }
 
         .section {
-            margin-top: 12px;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
             background: var(--surface);
-            padding-left: 20px;
+            border-radius: 10px;
+            margin: 0 16px;
+            padding-left: 16px;
         }
 
         .row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 20px 14px 0;
+            padding: 14px 16px 14px 0;
             border-bottom: 1px solid var(--border);
-            font-size: 17px;
+            font-size: 15px;
         }
 
         .row:last-child {
@@ -83,13 +69,13 @@ const html = `
         }
 
         .label {
-            color: var(--text-primary);
+            color: var(--text-secondary);
         }
 
         .value {
             color: var(--text-secondary);
             text-align: right;
-            max-width: 60%;
+            max-width: 65%;
             word-break: break-all;
         }
 
@@ -99,49 +85,73 @@ const html = `
             gap: 6px;
         }
 
-        .status::before {
-            content: '';
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        /* 状态图标：复选框和加载指示 */
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            background-color: var(--green);
+            color: #000;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-icon.err {
+            background-color: var(--red);
+            color: #fff;
+        }
+        
+        .status-icon.warn {
+            background-color: transparent;
+            font-size: 14px;
         }
 
-        .status.success::before { background-color: var(--green); }
-        .status.error::before { background-color: var(--red); }
-        .status.warning::before { background-color: var(--orange); }
-        .status.loading::before { 
-            background-color: var(--blue);
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
-        }
+        .status.success { color: var(--green); font-weight: 500; }
+        .status.error { color: var(--red); font-weight: 500;}
+        .status.warning { color: var(--text-primary); font-weight: 500;}
+        
+        .loading { color: var(--text-secondary); }
 
         .btn-container {
-            padding: 24px 20px;
+            padding: 24px 16px;
         }
 
         .btn {
             display: block;
             width: 100%;
-            padding: 16px;
-            background: var(--surface);
-            color: var(--blue);
+            padding: 14px;
+            background: var(--blue);
+            color: white;
             text-align: center;
-            border-radius: 12px;
-            font-size: 17px;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: 600;
             border: none;
             cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .btn:active {
-            opacity: 0.7;
+            opacity: 0.8;
+        }
+        
+        /* 进度条 */
+        #progress-container {
+            display: none;
+            width: 100%;
+            background-color: var(--border);
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+            height: 4px;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--blue);
+            transition: width 0.3s;
         }
     </style>
 </head>
@@ -149,77 +159,97 @@ const html = `
 
     <div class="header">
         <h1>节点检测报告</h1>
-        <div class="subtitle">IP & AI Services Audit</div>
     </div>
 
-    <!-- 出口网络信息 -->
+    <div class="section-title">出口 IP 信息</div>
     <div class="section">
         <div class="row">
-            <span class="label">出口 IP</span>
-            <span class="value" id="ip-address"><span class="status loading">检测中...</span></span>
+            <span class="label">IP 地址</span>
+            <span class="value" id="ip-address">未检测</span>
         </div>
         <div class="row">
-            <span class="label">位置归属</span>
-            <span class="value" id="ip-location">--</span>
+            <span class="label">位置</span>
+            <span class="value" id="ip-location">未检测</span>
         </div>
         <div class="row">
             <span class="label">ISP 服务商</span>
-            <span class="value" id="ip-isp">--</span>
+            <span class="value" id="ip-isp">未检测</span>
         </div>
         <div class="row">
-            <span class="label">IP 属性</span>
-            <span class="value" id="ip-type">--</span>
+            <span class="label">特征归属</span>
+            <span class="value" id="ip-type">未检测</span>
+        </div>
+        <div class="row">
+            <span class="label">代理风险</span>
+            <span class="value" id="ip-proxy">未检测</span>
         </div>
     </div>
 
-    <!-- AI 服务连通性 -->
-    <div class="header" style="padding-top: 24px;">
-        <div class="subtitle">Services Connectivity</div>
-    </div>
+    <div class="section-title">AI 服务连通性</div>
     <div class="section">
         <div class="row">
             <span class="label">ChatGPT (Web)</span>
-            <span class="value status loading" id="ai-chatgpt">Testing...</span>
+            <span class="value" id="ai-chatgpt">未检测</span>
         </div>
         <div class="row">
             <span class="label">ChatGPT (App)</span>
-            <span class="value status loading" id="ai-chatgpt-app">Testing...</span>
+            <span class="value" id="ai-chatgpt-app">未检测</span>
         </div>
         <div class="row">
             <span class="label">Google Gemini</span>
-            <span class="value status loading" id="ai-gemini">Testing...</span>
+            <span class="value" id="ai-gemini">未检测</span>
         </div>
     </div>
 
     <div class="btn-container">
-        <button class="btn" onclick="startAudit()">重新检测</button>
+        <button class="btn" id="start-btn" onclick="startAudit()">开始检测</button>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
     </div>
 
     <script>
-        function updateRow(id, text, statusClass = null) {
+        function updateRow(id, text, htmlMode = false) {
             const el = document.getElementById(id);
             if (!el) return;
-            el.innerHTML = text;
-            if (statusClass) {
-                el.className = 'value status ' + statusClass;
+            if (htmlMode) {
+                el.innerHTML = text;
             } else {
-                el.className = 'value';
+                el.innerText = text;
             }
+        }
+        
+        function setProgress(percent) {
+            document.getElementById('progress-bar').style.width = percent + '%';
         }
 
         async function startAudit() {
+            const btn = document.getElementById('start-btn');
+            const progressContainer = document.getElementById('progress-container');
+            
+            btn.innerText = "检测中...";
+            btn.disabled = true;
+            progressContainer.style.display = 'block';
+            setProgress(10);
+            
             // Reset UI
-            updateRow('ip-address', '<span class="status loading">检测中...</span>');
-            updateRow('ip-location', '--');
-            updateRow('ip-isp', '--');
-            updateRow('ip-type', '--');
-            updateRow('ai-chatgpt', 'Testing...', 'loading');
-            updateRow('ai-chatgpt-app', 'Testing...', 'loading');
-            updateRow('ai-gemini', 'Testing...', 'loading');
+            updateRow('ip-address', '检测中...');
+            updateRow('ip-location', '检测中...');
+            updateRow('ip-isp', '检测中...');
+            updateRow('ip-type', '检测中...');
+            updateRow('ip-proxy', '检测中...');
+            updateRow('ai-chatgpt', '检测中...');
+            updateRow('ai-chatgpt-app', '检测中...');
+            updateRow('ai-gemini', '检测中...');
 
             try {
+                // We use event streams or polling conceptually, but for simplicity here we just await the full API
+                // To simulate progress, we jump to 50%
+                setProgress(50);
+                
                 const response = await fetch('/api', { cache: 'no-store' });
                 const data = await response.json();
+                setProgress(90);
                 
                 // IP Section
                 if (data.ipInfo) {
@@ -228,39 +258,50 @@ const html = `
                     updateRow('ip-isp', data.ipInfo.isp || data.ipInfo.org);
                     
                     let isHosting = data.ipInfo.hosting;
+                    updateRow('ip-type', isHosting ? '数据中心 (Hosting)' : '住宅网络 (Residential)');
+
                     let isProxy = data.ipInfo.proxy;
-                    
-                    // Format like iOS Settings
-                    let typeHtml = "";
                     if (isProxy) {
-                        typeHtml = '<span style="color: var(--red);">代理节点 (Proxy)</span>';
-                    } else if (isHosting) {
-                        typeHtml = '<span style="color: var(--orange);">数据中心 (Hosting)</span>';
+                        updateRow('ip-proxy', '<span class="status error">代理 (Proxy: True)</span>', true);
                     } else {
-                        typeHtml = '<span style="color: var(--green);">住宅/移动 (Residential)</span>';
+                        updateRow('ip-proxy', '<span class="status success">纯净 (Proxy: False)</span>', true);
                     }
-                    updateRow('ip-type', typeHtml);
                 } else {
-                    updateRow('ip-address', '获取失败', 'error');
+                    updateRow('ip-address', '获取失败');
                 }
 
-                // AI Section
+                // AI Section Helper
+                const formatAI = (statusObj) => {
+                    if (statusObj.status === 'success') {
+                        return '<span class="status success"><span class="status-icon">✓</span>可用 (' + statusObj.ms + 'ms)</span>';
+                    } else if (statusObj.status === 'blocked') {
+                        return '<span class="status error"><span class="status-icon err">✕</span>不可用 (' + (statusObj.ms || '403') + ')</span>';
+                    } else {
+                        return '<span class="status error"><span class="status-icon err">✕</span>失败 (' + statusObj.error + ')</span>';
+                    }
+                };
+
                 if (data.aiStatus) {
-                    updateRow('ai-chatgpt', data.aiStatus.chatgptWeb, data.aiStatus.chatgptWeb.includes("✅") ? "success" : "error");
-                    updateRow('ai-chatgpt-app', data.aiStatus.chatgptApp, data.aiStatus.chatgptApp.includes("✅") ? "success" : "error");
-                    updateRow('ai-gemini', data.aiStatus.gemini, data.aiStatus.gemini.includes("✅") ? "success" : "error");
+                    updateRow('ai-chatgpt', formatAI(data.aiStatus.chatgptWeb), true);
+                    updateRow('ai-chatgpt-app', formatAI(data.aiStatus.chatgptApp), true);
+                    updateRow('ai-gemini', formatAI(data.aiStatus.gemini), true);
                 }
 
+                setProgress(100);
             } catch (err) {
-                updateRow('ip-address', '网络错误', 'error');
-                updateRow('ai-chatgpt', 'Failed', 'error');
-                updateRow('ai-chatgpt-app', 'Failed', 'error');
-                updateRow('ai-gemini', 'Failed', 'error');
+                updateRow('ip-address', '网络错误');
+                updateRow('ai-chatgpt', 'Failed');
+                updateRow('ai-chatgpt-app', 'Failed');
+                updateRow('ai-gemini', 'Failed');
+            } finally {
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    btn.innerText = "重新检测";
+                    btn.disabled = false;
+                    setProgress(0);
+                }, 500);
             }
         }
-
-        // Auto start on load
-        window.onload = startAudit;
     </script>
 </body>
 </html>
