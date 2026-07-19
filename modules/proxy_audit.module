@@ -1,12 +1,14 @@
-#!name= 代理节点完整检测 (本地探针)
-#!desc= 访问 https://audit.test 进行 IP 与 AI 服务连通性检测
+#!name=节点观测站
+#!desc=访问 https://audit.test 对当前代理出口执行完整、只读的身份、信誉、性能与服务入口检测
+#!author=jaychou0642-create
+#!homepage=https://github.com/jaychou0642-create/shadowrocket-fixed-sub
 
 [Script]
-# 前端页面
-Audit-FrontEnd = type=http-request, pattern=^https:\/\/audit\.test\/?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-front.js, timeout=60
+# 全新移动端观测面板
+Proxy-Observatory-Front = type=http-request, pattern=^https:\/\/audit\.test\/?(?:\?.*)?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-front.js, timeout=30
 
-# API 检测接口
-Audit-API = type=http-request, pattern=^https:\/\/audit\.test\/api\/?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-api.js, timeout=60
+# 完整探针：出口身份、8 轮延迟、2 x 10 MB 测速、信誉源与服务入口
+Proxy-Observatory-API = type=http-request, pattern=^https:\/\/audit\.test\/api\/?(?:\?.*)?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-api.js, timeout=90
 
 [MITM]
 hostname = %APPEND% audit.test
