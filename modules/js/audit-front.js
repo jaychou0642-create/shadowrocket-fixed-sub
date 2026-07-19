@@ -501,40 +501,41 @@ const html = `
         }
 
         .bar-item {
-            display: flex;
+            position: relative;
+            display: block;
             flex: 1;
-            flex-direction: column;
-            align-items: stretch;
             min-width: 0;
             height: 100%;
         }
 
         .bar-value {
-            flex: 0 0 17px;
-            overflow: hidden;
+            position: absolute;
+            z-index: 2;
+            left: 50%;
+            bottom: calc(var(--bar-height) + 5px);
+            transform: translateX(-50%);
             color: #b9d5e4;
             font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
             font-size: 9px;
             font-weight: 700;
             line-height: 14px;
             text-align: center;
-            text-overflow: clip;
             white-space: nowrap;
+            transition: bottom 0.6s cubic-bezier(.2, .8, .2, 1);
         }
 
         .bar-track {
-            display: flex;
-            flex: 1;
-            align-items: end;
-            min-height: 0;
+            position: absolute;
+            inset: 0;
         }
 
         .bar {
-            position: relative;
-            flex: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
             width: 100%;
             min-width: 3px;
-            height: 12%;
+            height: var(--bar-height);
             border-radius: 5px 5px 1px 1px;
             background: linear-gradient(to top, rgba(104, 225, 255, 0.32), var(--cyan));
             transition: height 0.6s cubic-bezier(.2, .8, .2, 1);
@@ -545,7 +546,6 @@ const html = `
         }
 
         .bar.failed {
-            height: 8% !important;
             background: var(--red);
             opacity: 0.5;
         }
@@ -961,7 +961,7 @@ const html = `
                 var maxValue = Math.max.apply(null, values.concat([1]));
                 container.innerHTML = (samples || []).map(function (sample) {
                     var ok = sample && sample.ok && sample[valueKey] != null;
-                    var ratio = ok ? Math.max(10, Math.round(Number(sample[valueKey]) / maxValue * 100)) : 8;
+                    var ratio = ok ? Math.max(10, Math.round(Number(sample[valueKey]) / maxValue * 72)) : 8;
                     var className = "bar" + (extraClass ? " " + extraClass : "") + (ok ? "" : " failed");
                     var numericValue = ok ? Number(sample[valueKey]) : null;
                     var displayValue = ok
@@ -969,9 +969,9 @@ const html = `
                         : "×";
                     var unit = valueKey === "mbps" ? " Mbps" : " ms";
                     var title = ok ? displayValue + unit : "失败";
-                    return '<span class="bar-item" title="' + escapeHtml(title) + '">' +
+                    return '<span class="bar-item" style="--bar-height:' + ratio + '%" title="' + escapeHtml(title) + '">' +
                         '<span class="bar-value">' + escapeHtml(displayValue) + '</span>' +
-                        '<span class="bar-track"><span class="' + className + '" style="height:' + ratio + '%"></span></span>' +
+                        '<span class="bar-track"><span class="' + className + '"></span></span>' +
                         '</span>';
                 }).join("");
             }
