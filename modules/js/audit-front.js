@@ -559,6 +559,52 @@ const html = `
             font-size: 10px;
         }
 
+        .performance-actions {
+            display: grid;
+            gap: 8px;
+            padding: 0 14px 16px;
+        }
+
+        .performance-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 46px;
+            border: 1px solid rgba(104, 225, 255, 0.3);
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(104, 225, 255, 0.12), rgba(155, 140, 255, 0.14));
+            color: #cceefa;
+            font-size: 12px;
+            font-weight: 760;
+            letter-spacing: 0.02em;
+            box-shadow: inset 0 0 20px rgba(104, 225, 255, 0.035);
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
+        }
+
+        .performance-action:active {
+            transform: scale(0.988);
+        }
+
+        .performance-action:disabled {
+            border-color: rgba(144, 180, 203, 0.16);
+            filter: saturate(0.5) brightness(0.78);
+            cursor: wait;
+        }
+
+        .performance-status {
+            min-height: 15px;
+            color: #688294;
+            text-align: center;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .performance-status.error {
+            color: #ff9da9;
+        }
+
         .source-list,
         .service-grid {
             display: grid;
@@ -833,6 +879,10 @@ const html = `
                         <div class="measure-foot"><span id="speed-success">—</span><span id="speed-range">—</span></div>
                     </article>
                 </div>
+                <div class="performance-actions">
+                    <button class="performance-action" id="performance-button" type="button">重新测试延迟和速度</button>
+                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区结果，不重复检测 IP、信誉和服务入口</div>
+                </div>
             </section>
 
             <section class="panel">
@@ -866,6 +916,7 @@ const html = `
     <script>
         (function () {
             var button = document.getElementById("run-button");
+            var performanceButton = document.getElementById("performance-button");
             var dashboard = document.getElementById("dashboard");
             var fatal = document.getElementById("fatal");
             var progressTimer = null;
@@ -1128,6 +1179,7 @@ const html = `
 
             async function run() {
                 button.disabled = true;
+                performanceButton.disabled = true;
                 button.textContent = "正在扫描当前出口…";
                 fatal.classList.remove("show");
                 dashboard.classList.add("is-hidden");
@@ -1155,10 +1207,49 @@ const html = `
                     button.textContent = "重试完整检测";
                 } finally {
                     button.disabled = false;
+                    performanceButton.disabled = false;
+                }
+            }
+
+            async function rerunPerformance() {
+                performanceButton.disabled = true;
+                button.disabled = true;
+                performanceButton.textContent = "正在重新测速…";
+                byId("performance-status").classList.remove("error");
+                text("performance-status", "正在运行原有的延迟与下载测速，请稍候");
+                document.body.classList.remove("is-ready");
+                document.body.classList.add("is-running");
+                text("live-text", "性能重测中");
+
+                try {
+                    var response = await fetch("/api?mode=performance&r=" + Date.now(), { cache: "no-store", headers: { "Accept": "application/json" } });
+                    var data = await response.json();
+                    if (!response.ok || data.error) {
+                        throw new Error(data.detail || data.error || "HTTP " + response.status);
+                    }
+                    renderPerformance(data);
+                    var meta = data.meta || {};
+                    var checked = meta.checkedAt ? new Date(meta.checkedAt) : null;
+                    var updatedText = checked && !isNaN(checked.getTime())
+                        ? "性能结果更新于 " + checked.toLocaleTimeString("zh-CN", { hour12: false })
+                        : "性能结果已更新";
+                    if (meta.elapsedMs != null) updatedText += " · 耗时 " + (meta.elapsedMs / 1000).toFixed(1) + " 秒";
+                    text("performance-status", updatedText);
+                } catch (error) {
+                    text("performance-status", "重新测速失败：" + (error && error.message ? error.message : String(error)));
+                    byId("performance-status").classList.add("error");
+                } finally {
+                    performanceButton.textContent = "重新测试延迟和速度";
+                    performanceButton.disabled = false;
+                    button.disabled = false;
+                    document.body.classList.remove("is-running");
+                    document.body.classList.add("is-ready");
+                    text("live-text", "报告就绪");
                 }
             }
 
             button.addEventListener("click", run);
+            performanceButton.addEventListener("click", rerunPerformance);
         }());
     </script>
 </body>
