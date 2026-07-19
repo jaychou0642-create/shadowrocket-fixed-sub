@@ -927,13 +927,15 @@ const html = `
             <section class="panel">
                 <div class="panel-head">
                     <div><div class="panel-index">02 / SIGNALS</div><h2 class="panel-title">结论矩阵</h2></div>
-                    <div class="panel-note">网络身份和代理出口分别判读</div>
+                    <div class="panel-note">身份、风险、AI 与流媒体分别判读</div>
                 </div>
                 <div class="matrix">
                     <article class="signal"><div class="signal-name">网络身份</div><div class="signal-value" id="signal-identity">—</div><div class="signal-detail" id="signal-identity-detail">—</div></article>
                     <article class="signal"><div class="signal-name">代理出口</div><div class="signal-value" id="signal-proxy">—</div><div class="signal-detail" id="signal-proxy-detail">—</div></article>
                     <article class="signal"><div class="signal-name">公开风险历史</div><div class="signal-value" id="signal-threat">—</div><div class="signal-detail" id="signal-threat-detail">—</div></article>
                     <article class="signal"><div class="signal-name">共享压力</div><div class="signal-value" id="signal-sharing">—</div><div class="signal-detail" id="signal-sharing-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">AI 服务</div><div class="signal-value" id="signal-ai">—</div><div class="signal-detail" id="signal-ai-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">流媒体解锁</div><div class="signal-value" id="signal-streaming">—</div><div class="signal-detail" id="signal-streaming-detail">—</div></article>
                 </div>
             </section>
 
@@ -1170,6 +1172,8 @@ const html = `
                 renderSignal("signal-proxy", "signal-proxy-detail", assessment.proxyExit);
                 renderSignal("signal-threat", "signal-threat-detail", assessment.threatHistory);
                 renderSignal("signal-sharing", "signal-sharing-detail", assessment.sharingPressure);
+                renderSignal("signal-ai", "signal-ai-detail", assessment.aiServices);
+                renderSignal("signal-streaming", "signal-streaming-detail", assessment.streamingAccess);
                 text("hero-kicker", "AUDIT COMPLETE · " + ((assessment.proxyDetectability || {}).label || "信号已汇总"));
                 text("hero-title", "当前出口画像已生成");
                 text("hero-copy", assessment.verdict || "检测完成，详细结果见下方。 ");
