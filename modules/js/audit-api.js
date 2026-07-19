@@ -1,9 +1,11 @@
-const VERSION = "2.0.0";
+const VERSION = "2.1.0";
 const SETTINGS = {
     profile: "full",
+    latencyRoundsPerTarget: 4,
     latencyRounds: 8,
-    downloadBytes: 10000000,
-    downloadRuns: 2
+    downloadWarmupBytes: 1000000,
+    downloadSteps: [5000000, 10000000, 25000000],
+    downloadContinueBelowMs: 1000
 };
 
 const BROWSER_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
@@ -241,63 +243,123 @@ async function collectReputation(ip) {
 }
 
 async function collectLatency() {
-    const samples = [];
-    for (let index = 0; index < SETTINGS.latencyRounds; index += 1) {
-        const result = await fetchUrl(
-            "https://speed.cloudflare.com/__down?bytes=1000&r=" + Date.now() + "-" + index,
-            { timeout: 8 }
-        );
-        samples.push({
-            run: index + 1,
-            ok: result.status === 200,
-            ms: result.ms,
-            status: result.status,
-            error: result.error
+    const definitions = [
+        {
+            id: "cloudflare",
+            label: "Cloudflare",
+            expectedStatus: 200,
+            url: function (roundIndex) {
+                return "https://speed.cloudflare.com/__down?bytes=1000&r=" + Date.now() + "-cf-" + roundIndex;
+            }
+        },
+        {
+            id: "google",
+            label: "Google",
+            expectedStatus: 204,
+            url: function (roundIndex) {
+                return "https://www.google.com/generate_204?r=" + Date.now() + "-gg-" + roundIndex;
+            }
+        }
+    ];
+    const buckets = definitions.map(function () { return []; });
+
+    for (let roundIndex = 0; roundIndex < SETTINGS.latencyRoundsPerTarget; roundIndex += 1) {
+        const roundResults = await Promise.all(definitions.map(function (definition) {
+            return fetchUrl(definition.url(roundIndex), { timeout: 8 });
+        }));
+        roundResults.forEach(function (result, targetIndex) {
+            const definition = definitions[targetIndex];
+            buckets[targetIndex].push({
+                run: roundIndex + 1,
+                target: definition.id,
+                ok: result.status === definition.expectedStatus,
+                ms: result.ms,
+                status: result.status,
+                error: result.error
+            });
         });
     }
+
+    const targets = definitions.map(function (definition, index) {
+        const targetSamples = buckets[index];
+        const successfulSamples = targetSamples.filter(function (sample) { return sample.ok; });
+        const targetValues = successfulSamples.map(function (sample) { return sample.ms; });
+        return {
+            id: definition.id,
+            label: definition.label,
+            rounds: SETTINGS.latencyRoundsPerTarget,
+            success: successfulSamples.length,
+            samples: targetSamples,
+            medianMs: round(median(targetValues), 0),
+            minimumMs: targetValues.length ? Math.min.apply(null, targetValues) : null,
+            maximumMs: targetValues.length ? Math.max.apply(null, targetValues) : null
+        };
+    });
+    const samples = targets.reduce(function (all, target) { return all.concat(target.samples); }, []);
     const successful = samples.filter(function (sample) { return sample.ok; });
     const values = successful.map(function (sample) { return sample.ms; });
     return {
-        target: "Cloudflare 1 KB",
+        target: "Cloudflare + Google",
+        roundsPerTarget: SETTINGS.latencyRoundsPerTarget,
         rounds: SETTINGS.latencyRounds,
         success: successful.length,
         samples: samples,
+        targets: targets,
         medianMs: round(median(values), 0),
         minimumMs: values.length ? Math.min.apply(null, values) : null,
         maximumMs: values.length ? Math.max.apply(null, values) : null
     };
 }
 
+async function measureDownload(bytes, run, stage) {
+    const result = await fetchUrl(
+        "https://speed.cloudflare.com/__down?bytes=" + bytes + "&r=" + Date.now() + "-" + stage + "-" + run,
+        { timeout: 20 }
+    );
+    const measuredBytes = byteLength(result.data);
+    const completeEnough = measuredBytes >= bytes * 0.75;
+    const effectiveBytes = completeEnough ? bytes : measuredBytes;
+    const ok = result.status === 200 && completeEnough && result.ms > 0;
+    const mbps = ok ? (effectiveBytes * 8 / (result.ms / 1000) / 1000000) : null;
+    return {
+        run: run,
+        stage: stage,
+        sizeLabel: round(bytes / 1000000, 0) + " MB",
+        requestedBytes: bytes,
+        ok: ok,
+        status: result.status,
+        bytes: effectiveBytes,
+        ms: result.ms,
+        mbps: round(mbps, 1),
+        error: result.error
+    };
+}
+
 async function collectBandwidth() {
+    const warmup = await measureDownload(SETTINGS.downloadWarmupBytes, 0, "warmup");
     const samples = [];
-    for (let index = 0; index < SETTINGS.downloadRuns; index += 1) {
-        const result = await fetchUrl(
-            "https://speed.cloudflare.com/__down?bytes=" + SETTINGS.downloadBytes + "&r=" + Date.now() + "-" + index,
-            { timeout: 20 }
-        );
-        const measuredBytes = byteLength(result.data);
-        const effectiveBytes = measuredBytes >= SETTINGS.downloadBytes * 0.75 ? SETTINGS.downloadBytes : measuredBytes;
-        const ok = result.status === 200 && effectiveBytes > 1000 && result.ms > 0;
-        const mbps = ok ? (effectiveBytes * 8 / (result.ms / 1000) / 1000000) : null;
-        samples.push({
-            run: index + 1,
-            ok: ok,
-            status: result.status,
-            bytes: effectiveBytes,
-            ms: result.ms,
-            mbps: round(mbps, 1),
-            error: result.error
-        });
+    let attemptedBytes = SETTINGS.downloadWarmupBytes;
+
+    for (let index = 0; index < SETTINGS.downloadSteps.length; index += 1) {
+        const bytes = SETTINGS.downloadSteps[index];
+        const sample = await measureDownload(bytes, index + 1, "measure");
+        samples.push(sample);
+        attemptedBytes += bytes;
+        if (!sample.ok || sample.ms >= SETTINGS.downloadContinueBelowMs) break;
     }
+
     const values = samples.filter(function (sample) { return sample.ok; }).map(function (sample) { return sample.mbps; });
     return {
-        requestedBytesPerRun: SETTINGS.downloadBytes,
-        runs: SETTINGS.downloadRuns,
+        method: "adaptive",
+        warmup: warmup,
+        runs: samples.length,
+        maximumRuns: SETTINGS.downloadSteps.length,
         samples: samples,
         medianMbps: round(median(values), 1),
         minimumMbps: values.length ? round(Math.min.apply(null, values), 1) : null,
         maximumMbps: values.length ? round(Math.max.apply(null, values), 1) : null,
-        approximateTrafficMb: round(SETTINGS.downloadBytes * SETTINGS.downloadRuns / 1000000, 0)
+        approximateTrafficMb: round(attemptedBytes / 1000000, 0),
+        maximumTrafficMb: round((SETTINGS.downloadWarmupBytes + SETTINGS.downloadSteps.reduce(function (sum, bytes) { return sum + bytes; }, 0)) / 1000000, 0)
     };
 }
 
@@ -348,7 +410,7 @@ async function collectServices() {
 
     let openai;
     if (results[3].status === 401) {
-        openai = serviceEntry(results[3], "reachable", "已到认证层", "未带 API Key 的预期 HTTP 401");
+        openai = serviceEntry(results[3], "reachable", "已到认证层", "未带 API Key 的预期响应");
     } else if (results[3].status >= 200 && results[3].status < 500) {
         openai = serviceEntry(results[3], "warning", "已响应", "HTTP " + results[3].status);
     } else {
@@ -481,7 +543,14 @@ function buildWarnings(exit, reputation, latency, bandwidth) {
     if (!exit.ipv6) warnings.push("IPv6 出口未检测到；这不代表 IPv6 一定不可用，可能是节点或探针不支持。");
     if (!reputation.blackbox.available) warnings.push("Blackbox 数据源不可用，相关代理与 Spamhaus 信号记为未知。");
     if (!reputation.ipquery.available) warnings.push("IPQuery 数据源不可用，相关机房与代理标记记为未知。");
-    if (latency.success < latency.rounds) warnings.push("HTTPS 延迟探测成功 " + latency.success + "/" + latency.rounds + "，失败样本未计入中位数。");
+    if (latency.targets && latency.targets.length) {
+        latency.targets.forEach(function (target) {
+            if (target.success < target.rounds) warnings.push(target.label + " HTTPS 延迟探测成功 " + target.success + "/" + target.rounds + "，失败样本未计入中位数。");
+        });
+    } else if (latency.success < latency.rounds) {
+        warnings.push("HTTPS 延迟探测成功 " + latency.success + "/" + latency.rounds + "，失败样本未计入中位数。");
+    }
+    if (bandwidth.warmup && !bandwidth.warmup.ok) warnings.push("渐进下载预热失败，后续速度结果可能不可用。");
     const speedSuccess = bandwidth.samples.filter(function (sample) { return sample.ok; }).length;
     if (speedSuccess < bandwidth.runs) warnings.push("下载测速成功 " + speedSuccess + "/" + bandwidth.runs + "，结果可能不完整。");
     return warnings;
@@ -491,16 +560,15 @@ async function runAudit() {
     const startedAt = Date.now();
     const exitPromise = collectExit();
     const latencyPromise = collectLatency();
-    const bandwidthPromise = collectBandwidth();
     const servicesPromise = collectServices();
 
     const exit = await exitPromise;
     const reputationPromise = collectReputation(exit.observedIp || exit.ipv4);
-    const results = await Promise.all([reputationPromise, latencyPromise, bandwidthPromise, servicesPromise]);
-    const reputation = results[0];
-    const latency = results[1];
-    const bandwidth = results[2];
-    const services = results[3];
+    const latency = await latencyPromise;
+    const auxiliaryResults = await Promise.all([reputationPromise, servicesPromise]);
+    const reputation = auxiliaryResults[0];
+    const services = auxiliaryResults[1];
+    const bandwidth = await collectBandwidth();
     const assessment = buildAssessment(exit, reputation, services);
 
     return {
@@ -525,7 +593,8 @@ async function runAudit() {
 
 async function runPerformance() {
     const startedAt = Date.now();
-    const results = await Promise.all([collectLatency(), collectBandwidth()]);
+    const latency = await collectLatency();
+    const bandwidth = await collectBandwidth();
     return {
         meta: {
             version: VERSION,
@@ -535,8 +604,8 @@ async function runPerformance() {
             settings: SETTINGS
         },
         performance: {
-            latency: results[0],
-            bandwidth: results[1]
+            latency: latency,
+            bandwidth: bandwidth
         }
     };
 }
