@@ -523,7 +523,28 @@ async function runAudit() {
     };
 }
 
-runAudit().then(function (result) {
+async function runPerformance() {
+    const startedAt = Date.now();
+    const results = await Promise.all([collectLatency(), collectBandwidth()]);
+    return {
+        meta: {
+            version: VERSION,
+            profile: "performance",
+            checkedAt: new Date().toISOString(),
+            elapsedMs: Date.now() - startedAt,
+            settings: SETTINGS
+        },
+        performance: {
+            latency: results[0],
+            bandwidth: results[1]
+        }
+    };
+}
+
+const requestUrl = typeof $request !== "undefined" && $request.url ? String($request.url) : "";
+const performanceOnly = /(?:[?&])mode=performance(?:&|$)/.test(requestUrl);
+
+(performanceOnly ? runPerformance() : runAudit()).then(function (result) {
     $done({
         response: {
             status: 200,
