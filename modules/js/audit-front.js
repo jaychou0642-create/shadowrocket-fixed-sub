@@ -882,13 +882,13 @@ const html = `
         </header>
 
         <section class="hero">
-            <p class="eyebrow" id="hero-kicker">FULL PATH AUDIT</p>
+            <p class="eyebrow" id="hero-kicker">AUTOMATIC AUDIT</p>
             <h1 id="hero-title">看清出口，而不是猜一个“纯净分”</h1>
-            <p class="hero-copy" id="hero-copy">一次完成出口身份、代理信号、公开风险、共享压力、Cloudflare 与 Google 各 4 轮延迟、渐进下载、常用 AI 入口与流媒体地区检测。</p>
+            <p class="hero-copy" id="hero-copy">打开页面自动完成出口身份、代理信号、公开风险、共享压力、常用 AI 入口与流媒体地区检测；链路样本按需运行。</p>
             <div class="hero-meta">
-                <span class="meta-chip" id="meta-profile">完整模式</span>
+                <span class="meta-chip" id="meta-profile">自动检测</span>
                 <span class="meta-chip" id="meta-time">尚未检测</span>
-                <span class="meta-chip" id="meta-elapsed">测速流量最高约 41 MB</span>
+                <span class="meta-chip" id="meta-elapsed">链路样本按需测试</span>
             </div>
         </section>
 
@@ -905,8 +905,8 @@ const html = `
             </div>
         </section>
 
-        <button class="action" id="run-button" type="button">正在准备完整检测…</button>
-        <div class="action-sub">只读检测 · 不切换节点 · 渐进下载最多约 41 MB</div>
+        <button class="action" id="run-button" type="button">正在准备自动检测…</button>
+        <div class="action-sub">只读检测 · 不切换节点 · 打开页面不自动测速</div>
         <div class="fatal" id="fatal"></div>
 
         <div class="dashboard is-hidden" id="dashboard">
@@ -942,7 +942,7 @@ const html = `
             <section class="panel">
                 <div class="panel-head">
                     <div><div class="panel-index">03 / PERFORMANCE</div><h2 class="panel-title">链路样本</h2></div>
-                    <div class="panel-note">Cloudflare / Google 各 4 次 HTTPS 完整请求</div>
+                    <div class="panel-note">点击按钮后执行 Cloudflare / Google 各 4 次请求</div>
                 </div>
                 <div class="performance-grid">
                     <article class="measure">
@@ -963,8 +963,8 @@ const html = `
                     </article>
                 </div>
                 <div class="performance-actions">
-                    <button class="performance-action" id="performance-button" type="button">重新测试延迟和速度</button>
-                    <div class="performance-status" id="performance-status" aria-live="polite">仅更新本区；出口、信誉、AI 和流媒体结果保持不变</div>
+                    <button class="performance-action" id="performance-button" type="button">测试延迟和速度</button>
+                    <div class="performance-status" id="performance-status" aria-live="polite">链路样本按需测试；不会随页面自动运行</div>
                 </div>
             </section>
 
@@ -1014,11 +1014,11 @@ const html = `
             var progress = 0;
             var stages = [
                 { at: 8, text: "建立出口快照" },
-                { at: 22, text: "查询公开信誉源" },
-                { at: 38, text: "Cloudflare / Google 各运行 4 轮延迟" },
-                { at: 52, text: "检测流媒体地区权限" },
-                { at: 66, text: "执行渐进下载测速" },
-                { at: 80, text: "验证常用 AI 入口" },
+                { at: 22, text: "识别机房与代理信号" },
+                { at: 38, text: "查询公开信誉源" },
+                { at: 52, text: "验证常用 AI 入口" },
+                { at: 66, text: "检测流媒体地区权限" },
+                { at: 80, text: "检查共享压力" },
                 { at: 91, text: "汇总结论矩阵" }
             ];
 
@@ -1207,6 +1207,22 @@ const html = `
 
             function renderPerformance(data) {
                 var performance = data.performance || {};
+                if (performance.deferred) {
+                    ["cloudflare", "google"].forEach(function (prefix) {
+                        byId(prefix + "-latency-number").innerHTML = "—<small>ms</small>";
+                        renderBars(prefix + "-latency-bars", [], "ms", prefix === "google" ? "google" : "", null);
+                        text(prefix + "-latency-success", "尚未测试");
+                        text(prefix + "-latency-range", "点击按钮开始");
+                    });
+                    byId("speed-number").innerHTML = "—<small>Mbps</small>";
+                    renderBars("speed-bars", [], "mbps", "speed", "sizeLabel");
+                    text("speed-success", "尚未测试");
+                    text("speed-range", "点击按钮开始");
+                    text("speed-method", "1 MB 预热 · 5 → 10 → 25 MB 按需执行 · 打开页面不消耗测速流量");
+                    text("performance-status", "链路样本按需测试；仅在点击按钮后执行");
+                    performanceButton.textContent = "测试延迟和速度";
+                    return;
+                }
                 var latency = performance.latency || {};
                 var bandwidth = performance.bandwidth || {};
                 renderLatencyTarget("cloudflare", latencyTarget(latency, "cloudflare"));
@@ -1314,7 +1330,7 @@ const html = `
             function renderMeta(data) {
                 var meta = data.meta || {};
                 var checked = meta.checkedAt ? new Date(meta.checkedAt) : null;
-                text("meta-profile", "FULL · v" + (meta.version || "—"));
+                text("meta-profile", (meta.profile === "automatic" ? "AUTO" : "FULL") + " · v" + (meta.version || "—"));
                 text("meta-time", checked && !isNaN(checked.getTime()) ? checked.toLocaleString("zh-CN", { hour12: false }) : "时间未知");
                 text("meta-elapsed", meta.elapsedMs == null ? "耗时未知" : "总耗时 " + (meta.elapsedMs / 1000).toFixed(1) + " 秒");
             }
@@ -1361,7 +1377,7 @@ const html = `
                     text("live-text", "检测失败");
                     fatal.textContent = "检测没有完成：" + (error && error.message ? error.message : String(error)) + "。请确认模块已启用并稍后重试。";
                     fatal.classList.add("show");
-                    button.textContent = "重试完整检测";
+                    button.textContent = "重试自动检测";
                 } finally {
                     button.disabled = false;
                     performanceButton.disabled = false;
