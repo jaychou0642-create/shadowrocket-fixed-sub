@@ -1276,7 +1276,7 @@ const html = `
                 ];
                 byId("service-grid").innerHTML = definitions.map(function (definition) {
                     var item = definition[1] || {};
-                    var tone = item.state === "reachable" ? "success" : (item.state === "error" ? "danger" : "warning");
+                    var tone = item.state === "reachable" ? "success" : (item.state === "error" || item.state === "blocked" ? "danger" : "warning");
                     var meta = [];
                     if (item.status) meta.push("HTTP " + item.status);
                     if (item.detail) {
