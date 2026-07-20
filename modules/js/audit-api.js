@@ -1,4 +1,4 @@
-const VERSION = "2.5.0";
+const VERSION = "2.5.1";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -349,13 +349,17 @@ async function collectBandwidth() {
         if (!sample.ok || sample.ms >= SETTINGS.downloadContinueBelowMs) break;
     }
 
-    const values = samples.filter(function (sample) { return sample.ok; }).map(function (sample) { return sample.mbps; });
+    const successfulSamples = samples.filter(function (sample) { return sample.ok; });
+    const values = successfulSamples.map(function (sample) { return sample.mbps; });
+    const finalSuccessfulSample = successfulSamples.length ? successfulSamples[successfulSamples.length - 1] : null;
     return {
         method: "adaptive",
         warmup: warmup,
         runs: samples.length,
         maximumRuns: SETTINGS.downloadSteps.length,
         samples: samples,
+        finalMbps: finalSuccessfulSample ? finalSuccessfulSample.mbps : null,
+        finalSizeLabel: finalSuccessfulSample ? finalSuccessfulSample.sizeLabel : null,
         medianMbps: round(median(values), 1),
         minimumMbps: values.length ? round(Math.min.apply(null, values), 1) : null,
         maximumMbps: values.length ? round(Math.max.apply(null, values), 1) : null,
