@@ -965,7 +965,7 @@ const html = `
                     <article class="signal"><div class="signal-name">代理出口</div><div class="signal-value" id="signal-proxy">—</div><div class="signal-detail" id="signal-proxy-detail">—</div></article>
                     <article class="signal"><div class="signal-name">公开风险历史</div><div class="signal-value" id="signal-threat">—</div><div class="signal-detail" id="signal-threat-detail">—</div></article>
                     <article class="signal"><div class="signal-name">共享压力</div><div class="signal-value" id="signal-sharing">—</div><div class="signal-detail" id="signal-sharing-detail">—</div></article>
-                    <article class="signal"><div class="signal-name">AI 自动检测</div><div class="signal-value" id="signal-ai">—</div><div class="signal-detail" id="signal-ai-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">AI 服务结论</div><div class="signal-value" id="signal-ai">—</div><div class="signal-detail" id="signal-ai-detail">—</div></article>
                     <article class="signal"><div class="signal-name">流媒体解锁</div><div class="signal-value" id="signal-streaming">—</div><div class="signal-detail" id="signal-streaming-detail">—</div></article>
                     <article class="signal"><div class="signal-name">送中检测</div><div class="signal-value" id="signal-china-routing">—</div><div class="signal-detail" id="signal-china-routing-detail">—</div></article>
                 </div>
@@ -1205,12 +1205,36 @@ const html = `
                 renderSignal("signal-proxy", "signal-proxy-detail", assessment.proxyExit);
                 renderSignal("signal-threat", "signal-threat-detail", assessment.threatHistory);
                 renderSignal("signal-sharing", "signal-sharing-detail", assessment.sharingPressure);
-                renderSignal("signal-ai", "signal-ai-detail", assessment.aiServices);
+                renderSignal("signal-ai", "signal-ai-detail", aiAssessmentWithManual(data, assessment.aiServices));
                 renderSignal("signal-streaming", "signal-streaming-detail", assessment.streamingAccess);
                 renderSignal("signal-china-routing", "signal-china-routing-detail", assessment.chinaRouting);
                 text("hero-kicker", "AUDIT COMPLETE · " + ((assessment.proxyDetectability || {}).label || "信号已汇总"));
                 text("hero-title", "当前出口画像已生成");
                 text("hero-copy", assessment.verdict || "检测完成，详细结果见下方。 ");
+            }
+
+            function aiAssessmentWithManual(data, automatic) {
+                var definitions = [
+                    ["chatgpt", "ChatGPT"], ["openai", "OpenAI API"], ["claude", "Claude"],
+                    ["gemini", "Gemini"], ["grok", "Grok"], ["perplexity", "Perplexity"], ["copilot", "Copilot"]
+                ];
+                var available = [];
+                var unavailable = [];
+                definitions.forEach(function (definition) {
+                    var value = readAiManual(data, definition[0]);
+                    if (value === "available") available.push(definition[1]);
+                    if (value === "unavailable") unavailable.push(definition[1]);
+                });
+                if (!available.length && !unavailable.length) return automatic;
+                var label;
+                if (available.length && unavailable.length) label = "实测 " + available.length + " 可用 / " + unavailable.length + " 不可用";
+                else if (unavailable.length) label = "本机实测不可用：" + unavailable.join("、");
+                else label = "本机实测可用：" + available.join("、");
+                return {
+                    label: label,
+                    tone: unavailable.length ? "danger" : "success",
+                    detail: "自动结论：" + ((automatic || {}).label || "未知") + "；再次点击已选按钮可清除本机记录"
+                };
             }
 
             function latencyTarget(latency, id) {
@@ -1502,6 +1526,7 @@ const html = `
                 if (!currentData || !target || !target.classList.contains("ai-manual-button")) return;
                 writeAiManual(currentData, target.getAttribute("data-ai-key"), target.getAttribute("data-ai-value"));
                 renderAiServices(currentData);
+                renderSignal("signal-ai", "signal-ai-detail", aiAssessmentWithManual(currentData, (currentData.assessment || {}).aiServices));
             });
             run();
         }());
