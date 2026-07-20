@@ -1,4 +1,4 @@
-const VERSION = "2.5.2";
+const VERSION = "2.7.0";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -379,53 +379,14 @@ function serviceEntry(result, state, label, detail) {
     };
 }
 
-function visiblePageText(result) {
-    return resultBody(result)
-        .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-        .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;|&#160;/gi, " ")
-        .replace(/&amp;/gi, "&")
-        .replace(/&#39;|&apos;/gi, "'")
-        .replace(/&quot;/gi, '"')
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function aiRestrictionDetail(result) {
-    const text = visiblePageText(result).toLowerCase();
-    if (!text) return null;
-    const patterns = [
-        /not (?:currently )?available in (?:your|this) (?:country|region)/,
-        /not (?:currently )?supported in (?:your|this) (?:country|region)/,
-        /isn't currently supported in (?:your|this) (?:country|region)/,
-        /service (?:is )?not available in (?:your|this) (?:country|region)/,
-        /在(?:此|您所在的|你所在的)?国家\/地区无法使用/,
-        /(?:您|你)所在的国家\/地区不支持/,
-        /当前不支持(?:您|你)所在的国家\/地区/
-    ];
-    return patterns.some(function (pattern) { return pattern.test(text); }) ? "页面明确提示国家/地区不受支持" : null;
-}
-
-function aiWebsiteEntry(result) {
-    const restriction = aiRestrictionDetail(result);
-    if (restriction) {
-        return serviceEntry(result, "blocked", "地区不可用", restriction);
-    }
-    if (result.status >= 200 && result.status < 400) {
-        return serviceEntry(result, "warning", "网页有响应·模型待实测", "仅验证入口，不验证账号、订阅或模型调用");
-    }
-    if (result.status === 401) {
-        return serviceEntry(result, "warning", "已到达·需登录", "HTTP 401");
-    }
-    if (result.status === 403) {
-        const challenged = result.headers["cf-mitigated"] === "challenge";
-        return serviceEntry(result, "warning", challenged ? "已到达·挑战页" : "已到达·HTTP 403", "可能为登录、风控或地区限制");
-    }
-    if (result.status > 0) {
-        return serviceEntry(result, "warning", "已响应", "HTTP " + result.status);
-    }
-    return serviceEntry(result, "error", "传输失败", result.error);
+function aiReachabilityEntry(result) {
+    const reachable = result.status > 0;
+    return serviceEntry(
+        result,
+        reachable ? "reachable" : "error",
+        reachable ? "可达" : "不可达",
+        reachable ? null : result.error
+    );
 }
 
 async function collectServices() {
@@ -447,34 +408,92 @@ async function collectServices() {
         fetchUrl("https://copilot.microsoft.com/", { timeout: 15, headers: browserHeaders })
     ]);
 
-    const chatgpt = aiWebsiteEntry(results[0]);
-
-    let openai;
-    if (results[1].status === 401) {
-        openai = serviceEntry(results[1], "reachable", "已到认证层", "未带 API Key 的预期响应；不代表模型可调用");
-    } else if (results[1].status >= 200 && results[1].status < 500) {
-        openai = serviceEntry(results[1], "warning", "已响应", "HTTP " + results[1].status);
-    } else {
-        openai = serviceEntry(results[1], "error", "传输失败", results[1].error || "HTTP " + results[1].status);
-    }
-
     const githubData = parseJson(results[2]) || {};
     const githubCore = ((githubData.resources || {}).core || {});
 
     return {
-        chatgpt: chatgpt,
-        openai: openai,
-        claude: aiWebsiteEntry(results[3]),
-        gemini: aiWebsiteEntry(results[4]),
-        grok: aiWebsiteEntry(results[5]),
-        perplexity: aiWebsiteEntry(results[6]),
-        copilot: aiWebsiteEntry(results[7]),
+        chatgpt: aiReachabilityEntry(results[0]),
+        openai: aiReachabilityEntry(results[1]),
+        claude: aiReachabilityEntry(results[3]),
+        gemini: aiReachabilityEntry(results[4]),
+        grok: aiReachabilityEntry(results[5]),
+        perplexity: aiReachabilityEntry(results[6]),
+        copilot: aiReachabilityEntry(results[7]),
         githubAnonymousCoreRate: {
             available: results[2].status === 200 && githubCore.limit != null,
             remaining: numberOrNull(githubCore.remaining),
             limit: numberOrNull(githubCore.limit),
             reset: numberOrNull(githubCore.reset)
         }
+    };
+}
+
+function summarizeTimingTarget(id, label, samples, rounds) {
+    const successful = samples.filter(function (sample) { return sample.ok; });
+    const values = successful.map(function (sample) { return sample.ms; });
+    return {
+        id: id,
+        label: label,
+        rounds: rounds,
+        success: successful.length,
+        samples: samples,
+        medianMs: round(median(values), 0),
+        minimumMs: values.length ? Math.min.apply(null, values) : null,
+        maximumMs: values.length ? Math.max.apply(null, values) : null
+    };
+}
+
+function extractOaiStaticUrl(result) {
+    const source = resultBody(result)
+        .replace(/\\u002f/gi, "/")
+        .replace(/\\u0026/gi, "&")
+        .replace(/\\\//g, "/")
+        .replace(/&amp;/gi, "&");
+    const absolute = source.match(/https?:\/\/[a-z0-9.-]*oaistatic\.com\/[^\s"'<>\\]+/i);
+    if (absolute) return absolute[0];
+    const relative = source.match(/\/\/[a-z0-9.-]*oaistatic\.com\/[^\s"'<>\\]+/i);
+    return relative ? "https:" + relative[0] : null;
+}
+
+async function collectGptHttpDetails() {
+    const browserHeaders = {
+        "User-Agent": BROWSER_UA,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9"
+    };
+    const webSamples = [];
+    const apiSamples = [];
+    let homepageResult = null;
+
+    for (let roundIndex = 0; roundIndex < 4; roundIndex += 1) {
+        const results = await Promise.all([
+            fetchUrl("https://chatgpt.com/?audit_round=" + (roundIndex + 1) + "&r=" + Date.now(), { timeout: 20, headers: browserHeaders }),
+            fetchUrl("https://api.openai.com/v1/models", { timeout: 15 })
+        ]);
+        const web = results[0];
+        const api = results[1];
+        if (!homepageResult && web.status > 0 && resultBody(web)) homepageResult = web;
+        webSamples.push({ run: roundIndex + 1, ok: web.status > 0, ms: web.ms, status: web.status, error: web.error });
+        apiSamples.push({ run: roundIndex + 1, ok: api.status > 0, ms: api.ms, status: api.status, error: api.error });
+    }
+
+    const assetUrl = extractOaiStaticUrl(homepageResult);
+    const staticSamples = [];
+    if (assetUrl) {
+        for (let roundIndex = 0; roundIndex < 2; roundIndex += 1) {
+            const asset = await fetchUrl(assetUrl, { timeout: 20, headers: { "User-Agent": BROWSER_UA } });
+            staticSamples.push({ run: roundIndex + 1, ok: asset.status > 0, ms: asset.ms, status: asset.status, error: asset.error });
+        }
+    }
+
+    const staticTarget = summarizeTimingTarget("static", "ChatGPT 静态资源", staticSamples, 2);
+    staticTarget.assetHost = assetUrl ? String(assetUrl).replace(/^https?:\/\//i, "").split("/")[0] : null;
+    staticTarget.available = !!assetUrl;
+
+    return {
+        web: summarizeTimingTarget("web", "ChatGPT Web", webSamples, 4),
+        static: staticTarget,
+        api: summarizeTimingTarget("api", "OpenAI API（参考）", apiSamples, 4)
     };
 }
 
@@ -653,19 +672,16 @@ function summarizeAiServices(services) {
     if (!items.length) return { code: "unknown", label: "未知", tone: "neutral", detail: "没有 AI 入口检测结果" };
 
     const reachable = items.filter(function (item) { return item.state === "reachable"; }).length;
-    const uncertain = items.filter(function (item) { return item.state === "warning"; }).length;
-    const blocked = items.filter(function (item) { return item.state === "blocked"; }).length;
-    const failed = items.filter(function (item) { return item.state === "error" || !item.status; }).length;
-    const responded = items.length - failed;
+    const failed = items.length - reachable;
     let tone = "warning";
     if (reachable === items.length) tone = "success";
-    else if (!responded || blocked === items.length) tone = "danger";
+    else if (!reachable) tone = "danger";
 
     return {
-        code: responded ? (reachable === items.length ? "reachable" : "mixed") : "unreachable",
-        label: responded ? responded + "/" + items.length + " 入口有响应" : "入口均失败",
+        code: reachable ? (reachable === items.length ? "reachable" : "mixed") : "unreachable",
+        label: reachable ? reachable + "/" + items.length + " 可达" : "全部不可达",
         tone: tone,
-        detail: reachable + " 到达认证层 · " + uncertain + " 网页响应/待实测 · " + blocked + " 地区受限 · " + failed + " 失败"
+        detail: reachable + " 可达 · " + failed + " 不可达；仅统计 HTTP 响应"
     };
 }
 
@@ -793,12 +809,14 @@ async function runAudit(includePerformance) {
     const startedAt = Date.now();
     const exitPromise = collectExit();
     const latencyPromise = includePerformance ? collectLatency() : null;
+    const gptPromise = includePerformance ? collectGptHttpDetails() : null;
     const servicesPromise = collectServices();
     const streamingPromise = collectStreaming();
 
     const exit = await exitPromise;
     const reputationPromise = collectReputation(exit.observedIp || exit.ipv4);
     const latency = latencyPromise ? await latencyPromise : null;
+    const gpt = gptPromise ? await gptPromise : null;
     const auxiliaryResults = await Promise.all([reputationPromise, servicesPromise, streamingPromise]);
     const reputation = auxiliaryResults[0];
     const services = auxiliaryResults[1];
@@ -819,10 +837,12 @@ async function runAudit(includePerformance) {
         performance: includePerformance ? {
             deferred: false,
             latency: latency,
+            gpt: gpt,
             bandwidth: bandwidth
         } : {
             deferred: true,
             latency: { targets: [], samples: [], rounds: 0, success: 0 },
+            gpt: null,
             bandwidth: { samples: [], runs: 0, approximateTrafficMb: 0 }
         },
         reputation: reputation,
@@ -834,7 +854,9 @@ async function runAudit(includePerformance) {
 
 async function runPerformance() {
     const startedAt = Date.now();
-    const latency = await collectLatency();
+    const latencyResults = await Promise.all([collectLatency(), collectGptHttpDetails()]);
+    const latency = latencyResults[0];
+    const gpt = latencyResults[1];
     const bandwidth = await collectBandwidth();
     return {
         meta: {
@@ -846,6 +868,42 @@ async function runPerformance() {
         },
         performance: {
             latency: latency,
+            gpt: gpt,
+            bandwidth: bandwidth
+        }
+    };
+}
+
+async function runLatency() {
+    const startedAt = Date.now();
+    const results = await Promise.all([collectLatency(), collectGptHttpDetails()]);
+    return {
+        meta: {
+            version: VERSION,
+            profile: "latency",
+            checkedAt: new Date().toISOString(),
+            elapsedMs: Date.now() - startedAt,
+            settings: SETTINGS
+        },
+        performance: {
+            latency: results[0],
+            gpt: results[1]
+        }
+    };
+}
+
+async function runSpeed() {
+    const startedAt = Date.now();
+    const bandwidth = await collectBandwidth();
+    return {
+        meta: {
+            version: VERSION,
+            profile: "speed",
+            checkedAt: new Date().toISOString(),
+            elapsedMs: Date.now() - startedAt,
+            settings: SETTINGS
+        },
+        performance: {
             bandwidth: bandwidth
         }
     };
@@ -853,9 +911,11 @@ async function runPerformance() {
 
 const requestUrl = typeof $request !== "undefined" && $request.url ? String($request.url) : "";
 const performanceOnly = /(?:[?&])mode=performance(?:&|$)/.test(requestUrl);
+const latencyOnly = /(?:[?&])mode=latency(?:&|$)/.test(requestUrl);
+const speedOnly = /(?:[?&])mode=speed(?:&|$)/.test(requestUrl);
 const fullAudit = /(?:[?&])mode=full(?:&|$)/.test(requestUrl);
 
-(performanceOnly ? runPerformance() : runAudit(fullAudit)).then(function (result) {
+(latencyOnly ? runLatency() : speedOnly ? runSpeed() : performanceOnly ? runPerformance() : runAudit(fullAudit)).then(function (result) {
     $done({
         response: {
             status: 200,
