@@ -791,51 +791,6 @@ const html = `
             line-height: 1.45;
         }
 
-        .ai-manual {
-            display: flex;
-            gap: 7px;
-            margin-top: 13px;
-        }
-
-        .ai-manual-button {
-            flex: 1;
-            min-height: 31px;
-            padding: 5px 7px;
-            border: 1px solid var(--line-strong);
-            border-radius: 10px;
-            background: rgba(130, 160, 180, 0.06);
-            color: #88a2b2;
-            font-size: 9px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .ai-manual-button.active[data-ai-value="available"] {
-            border-color: rgba(97, 230, 167, 0.42);
-            background: rgba(97, 230, 167, 0.12);
-            color: var(--green);
-        }
-
-        .ai-manual-button.active[data-ai-value="unavailable"] {
-            border-color: rgba(255, 118, 133, 0.44);
-            background: rgba(255, 118, 133, 0.12);
-            color: #ff9ba7;
-        }
-
-        .routing-manual {
-            margin-top: 13px;
-        }
-
-        .routing-manual-button {
-            width: 100%;
-        }
-
-        .routing-manual-button.active {
-            border-color: rgba(255, 118, 133, 0.44);
-            background: rgba(255, 118, 133, 0.12);
-            color: #ff9ba7;
-        }
-
         .warnings {
             display: none;
             margin-top: 14px;
@@ -979,9 +934,8 @@ const html = `
                     <article class="signal"><div class="signal-name">代理出口</div><div class="signal-value" id="signal-proxy">—</div><div class="signal-detail" id="signal-proxy-detail">—</div></article>
                     <article class="signal"><div class="signal-name">公开风险历史</div><div class="signal-value" id="signal-threat">—</div><div class="signal-detail" id="signal-threat-detail">—</div></article>
                     <article class="signal"><div class="signal-name">共享压力</div><div class="signal-value" id="signal-sharing">—</div><div class="signal-detail" id="signal-sharing-detail">—</div></article>
-                    <article class="signal"><div class="signal-name">AI 服务结论</div><div class="signal-value" id="signal-ai">—</div><div class="signal-detail" id="signal-ai-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">AI 服务</div><div class="signal-value" id="signal-ai">—</div><div class="signal-detail" id="signal-ai-detail">—</div></article>
                     <article class="signal"><div class="signal-name">流媒体解锁</div><div class="signal-value" id="signal-streaming">—</div><div class="signal-detail" id="signal-streaming-detail">—</div></article>
-                    <article class="signal"><div class="signal-name">送中检测</div><div class="signal-value" id="signal-china-routing">—</div><div class="signal-detail" id="signal-china-routing-detail">—</div><div class="routing-manual"><button type="button" class="ai-manual-button routing-manual-button" id="china-routing-manual">Google 页脚显示中国</button></div></article>
                 </div>
             </section>
 
@@ -1031,8 +985,8 @@ const html = `
 
             <section class="panel">
                 <div class="panel-head">
-                    <div><div class="panel-index">05 / AI SERVICES</div><h2 class="panel-title">AI 网络与地区</h2></div>
-                    <div class="panel-note">地区、网页与 API 联合判断；可记录本机实测</div>
+                    <div><div class="panel-index">05 / AI SERVICES</div><h2 class="panel-title">AI 服务</h2></div>
+                    <div class="panel-note">入口响应不代表账号、订阅或模型可用</div>
                 </div>
                 <div class="service-grid" id="service-grid"></div>
             </section>
@@ -1047,7 +1001,7 @@ const html = `
         </div>
 
         <aside class="warnings" id="warnings"><strong>本次检测备注</strong><ul id="warning-list"></ul></aside>
-        <footer class="method">判读原则：托管/数据中心身份不等于恶意 IP；代理/VPN 信号与网络身份是两个维度；单个信誉源未命中不代表绝对干净；AI 自动检测联合出口地区、网页和 API 入口，但仍不验证账号、订阅或真实模型调用；流媒体结果来自公开页面和地区标记，不验证账号权限、DRM 或实际播放。</footer>
+        <footer class="method">判读原则：托管/数据中心身份不等于恶意 IP；代理/VPN 信号与网络身份是两个维度；单个信誉源未命中不代表绝对干净；AI 入口响应只证明网络可达；流媒体结果来自公开页面和地区标记，不验证账号权限、DRM 或实际播放。</footer>
     </main>
 
     <script>
@@ -1058,7 +1012,6 @@ const html = `
             var fatal = document.getElementById("fatal");
             var progressTimer = null;
             var progress = 0;
-            var currentData = null;
             var stages = [
                 { at: 8, text: "建立出口快照" },
                 { at: 22, text: "识别机房与代理信号" },
@@ -1219,75 +1172,11 @@ const html = `
                 renderSignal("signal-proxy", "signal-proxy-detail", assessment.proxyExit);
                 renderSignal("signal-threat", "signal-threat-detail", assessment.threatHistory);
                 renderSignal("signal-sharing", "signal-sharing-detail", assessment.sharingPressure);
-                renderSignal("signal-ai", "signal-ai-detail", aiAssessmentWithManual(data, assessment.aiServices));
+                renderSignal("signal-ai", "signal-ai-detail", assessment.aiServices);
                 renderSignal("signal-streaming", "signal-streaming-detail", assessment.streamingAccess);
-                renderSignal("signal-china-routing", "signal-china-routing-detail", chinaAssessmentWithManual(data, assessment.chinaRouting));
-                renderChinaManualButton(data);
                 text("hero-kicker", "AUDIT COMPLETE · " + ((assessment.proxyDetectability || {}).label || "信号已汇总"));
                 text("hero-title", "当前出口画像已生成");
                 text("hero-copy", assessment.verdict || "检测完成，详细结果见下方。 ");
-            }
-
-            function aiAssessmentWithManual(data, automatic) {
-                var definitions = [
-                    ["chatgpt", "ChatGPT"], ["openai", "OpenAI API"], ["claude", "Claude"],
-                    ["gemini", "Gemini"], ["grok", "Grok"], ["perplexity", "Perplexity"], ["copilot", "Copilot"]
-                ];
-                var available = [];
-                var unavailable = [];
-                definitions.forEach(function (definition) {
-                    var value = readAiManual(data, definition[0]);
-                    if (value === "available") available.push(definition[1]);
-                    if (value === "unavailable") unavailable.push(definition[1]);
-                });
-                if (!available.length && !unavailable.length) return automatic;
-                var label;
-                if (available.length && unavailable.length) label = "实测 " + available.length + " 可用 / " + unavailable.length + " 不可用";
-                else if (unavailable.length) label = "本机实测不可用：" + unavailable.join("、");
-                else label = "本机实测可用：" + available.join("、");
-                return {
-                    label: label,
-                    tone: unavailable.length ? "danger" : "success",
-                    detail: "自动结论：" + ((automatic || {}).label || "未知") + "；再次点击已选按钮可清除本机记录"
-                };
-            }
-
-            function chinaManualKey(data) {
-                var exit = (data || {}).exit || {};
-                var identity = exit.observedIp || exit.ipv4 || exit.ipv6 || exit.countryCode || "unknown";
-                return "proxy-audit-google-china:" + hashText(identity);
-            }
-
-            function readChinaManual(data) {
-                try {
-                    return localStorage.getItem(chinaManualKey(data)) === "china";
-                } catch (_) {
-                    return false;
-                }
-            }
-
-            function toggleChinaManual(data) {
-                try {
-                    var key = chinaManualKey(data);
-                    if (readChinaManual(data)) localStorage.removeItem(key);
-                    else localStorage.setItem(key, "china");
-                } catch (_) {}
-            }
-
-            function chinaAssessmentWithManual(data, automatic) {
-                if (!readChinaManual(data)) return automatic;
-                return {
-                    label: "浏览器显示中国地区",
-                    tone: "danger",
-                    detail: "本机实测：Google 搜索页脚显示中国；自动结论：" + ((automatic || {}).label || "未知")
-                };
-            }
-
-            function renderChinaManualButton(data) {
-                var manualButton = byId("china-routing-manual");
-                var active = readChinaManual(data);
-                manualButton.classList.toggle("active", active);
-                manualButton.textContent = active ? "已记录：Google 页脚显示中国" : "Google 页脚显示中国";
             }
 
             function latencyTarget(latency, id) {
@@ -1377,70 +1266,32 @@ const html = `
             function renderAiServices(data) {
                 var services = data.services || {};
                 var definitions = [
-                    ["chatgpt", "ChatGPT", services.chatgpt],
-                    ["openai", "OpenAI API", services.openai],
-                    ["claude", "Claude", services.claude],
-                    ["gemini", "Gemini", services.gemini],
-                    ["grok", "Grok", services.grok],
-                    ["perplexity", "Perplexity", services.perplexity],
-                    ["copilot", "Microsoft Copilot", services.copilot]
+                    ["ChatGPT", services.chatgpt],
+                    ["OpenAI API", services.openai],
+                    ["Claude", services.claude],
+                    ["Gemini", services.gemini],
+                    ["Grok", services.grok],
+                    ["Perplexity", services.perplexity],
+                    ["Microsoft Copilot", services.copilot]
                 ];
                 byId("service-grid").innerHTML = definitions.map(function (definition) {
-                    var key = definition[0];
-                    var item = definition[2] || {};
-                    var manual = readAiManual(data, key);
-                    var automaticLabel = item.label || "未知";
-                    var displayState = manual === "available" ? "reachable" : (manual === "unavailable" ? "blocked" : item.state);
-                    var displayLabel = manual === "available" ? "本机实测可用" : (manual === "unavailable" ? "本机实测不可用" : automaticLabel);
-                    var tone = displayState === "reachable" ? "success" : (displayState === "error" || displayState === "blocked" ? "danger" : "warning");
+                    var item = definition[1] || {};
+                    var tone = item.state === "reachable" ? "success" : (item.state === "error" || item.state === "blocked" ? "danger" : "warning");
                     var meta = [];
-                    if (manual) meta.push("自动判断：" + automaticLabel);
-                    if (item.detail) meta.push(String(item.detail));
-                    else if (item.status) meta.push("HTTP " + item.status);
+                    if (item.status) meta.push("HTTP " + item.status);
+                    if (item.detail) {
+                        var detail = String(item.detail);
+                        var statusToken = "HTTP " + item.status;
+                        if (detail !== statusToken && detail.slice(-statusToken.length) === statusToken) detail = detail.slice(0, -statusToken.length).trim();
+                        if (detail && detail !== statusToken) meta.push(detail);
+                    }
                     var latency = item.ms != null && item.status ? '<span class="service-latency">' + escapeHtml(item.ms) + '<small>ms</small></span>' : "";
                     return '<article class="service">' +
-                        '<div class="service-head"><div class="service-name">' + escapeHtml(definition[1]) + '</div>' + latency + '</div>' +
-                        '<div class="service-state ' + toneClass(tone) + '">' + escapeHtml(displayLabel) + '</div>' +
+                        '<div class="service-head"><div class="service-name">' + escapeHtml(definition[0]) + '</div>' + latency + '</div>' +
+                        '<div class="service-state ' + toneClass(tone) + '">' + escapeHtml(item.label || "未知") + '</div>' +
                         '<div class="service-meta">' + escapeHtml(meta.join(" · ") || item.error || "无数据") + '</div>' +
-                        '<div class="ai-manual">' +
-                            '<button type="button" class="ai-manual-button' + (manual === "available" ? " active" : "") + '" data-ai-key="' + escapeHtml(key) + '" data-ai-value="available">实测可用</button>' +
-                            '<button type="button" class="ai-manual-button' + (manual === "unavailable" ? " active" : "") + '" data-ai-key="' + escapeHtml(key) + '" data-ai-value="unavailable">实测不可用</button>' +
-                        '</div>' +
                         '</article>';
                 }).join("");
-            }
-
-            function hashText(value) {
-                var hash = 2166136261;
-                var source = String(value || "unknown");
-                for (var index = 0; index < source.length; index += 1) {
-                    hash ^= source.charCodeAt(index);
-                    hash = Math.imul(hash, 16777619);
-                }
-                return (hash >>> 0).toString(36);
-            }
-
-            function aiManualKey(data, serviceKey) {
-                var exit = (data || {}).exit || {};
-                var identity = exit.observedIp || exit.ipv4 || exit.ipv6 || exit.countryCode || "unknown";
-                return "proxy-audit-ai:" + hashText(identity) + ":" + serviceKey;
-            }
-
-            function readAiManual(data, serviceKey) {
-                try {
-                    var value = localStorage.getItem(aiManualKey(data, serviceKey));
-                    return value === "available" || value === "unavailable" ? value : null;
-                } catch (_) {
-                    return null;
-                }
-            }
-
-            function writeAiManual(data, serviceKey, value) {
-                try {
-                    var key = aiManualKey(data, serviceKey);
-                    if (readAiManual(data, serviceKey) === value) localStorage.removeItem(key);
-                    else localStorage.setItem(key, value);
-                } catch (_) {}
             }
 
             function renderStreaming(data) {
@@ -1486,7 +1337,6 @@ const html = `
             }
 
             function render(data) {
-                currentData = data;
                 renderMeta(data);
                 renderIdentity(data);
                 renderAssessment(data);
@@ -1574,19 +1424,6 @@ const html = `
 
             button.addEventListener("click", run);
             performanceButton.addEventListener("click", rerunPerformance);
-            byId("service-grid").addEventListener("click", function (event) {
-                var target = event.target;
-                if (!currentData || !target || !target.classList.contains("ai-manual-button")) return;
-                writeAiManual(currentData, target.getAttribute("data-ai-key"), target.getAttribute("data-ai-value"));
-                renderAiServices(currentData);
-                renderSignal("signal-ai", "signal-ai-detail", aiAssessmentWithManual(currentData, (currentData.assessment || {}).aiServices));
-            });
-            byId("china-routing-manual").addEventListener("click", function () {
-                if (!currentData) return;
-                toggleChinaManual(currentData);
-                renderSignal("signal-china-routing", "signal-china-routing-detail", chinaAssessmentWithManual(currentData, (currentData.assessment || {}).chinaRouting));
-                renderChinaManualButton(currentData);
-            });
             run();
         }());
     </script>
