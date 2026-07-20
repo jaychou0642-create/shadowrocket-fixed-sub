@@ -358,8 +358,7 @@ const html = `
             -webkit-backdrop-filter: blur(18px);
         }
 
-        .panel-latency { order: -2; }
-        .panel-speed { order: -1; }
+        .panel-performance { order: -2; }
 
         .panel-head {
             display: flex;
@@ -467,7 +466,7 @@ const html = `
         .performance-grid,
         .gpt-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
             padding: 0 14px 14px;
         }
@@ -872,6 +871,41 @@ const html = `
         @media (max-width: 430px) {
             .hero { padding: 21px 18px; border-radius: 24px; }
             .matrix { grid-template-columns: 1fr; }
+            .performance-grid,
+            .gpt-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+                padding-right: 10px;
+                padding-left: 10px;
+            }
+            .measure {
+                padding: 12px 10px;
+                border-radius: 15px;
+            }
+            .measure-top {
+                display: grid;
+                gap: 6px;
+                align-items: start;
+            }
+            .measure-name {
+                min-height: 30px;
+                font-size: 9px;
+                line-height: 1.4;
+            }
+            .measure-number { font-size: 20px; }
+            .measure-number small { font-size: 8px; }
+            .bars {
+                height: 68px;
+                gap: 4px;
+                margin-top: 12px;
+            }
+            .measure-foot {
+                display: grid;
+                gap: 3px;
+                font-size: 8px;
+                line-height: 1.3;
+            }
+            .measure-method { font-size: 8px; }
             .service-grid,
             .streaming-grid { grid-template-columns: 1fr; }
             .signal { min-height: 106px; }
@@ -879,7 +913,7 @@ const html = `
             .source { grid-template-columns: 1fr; gap: 6px; }
             .source-value { text-align: left; }
             .signal-tags { justify-content: flex-start; }
-            .bar-value { font-size: 8px; }
+            .bar-value { font-size: 7px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -903,7 +937,7 @@ const html = `
             <div class="live-chip"><span class="live-dot"></span><span id="live-text">待命</span></div>
         </header>
 
-        <div class="version-line" id="meta-profile">v2.8.0</div>
+        <div class="version-line" id="meta-profile">v2.8.1</div>
 
         <section class="scan" aria-live="polite">
             <div class="scan-head">
@@ -925,7 +959,7 @@ const html = `
         <div class="dashboard" id="dashboard">
             <section class="panel panel-exit">
                 <div class="panel-head">
-                    <div><div class="panel-index">03 / EXIT</div><h2 class="panel-title">出口坐标</h2></div>
+                    <div><div class="panel-index">02 / EXIT</div><h2 class="panel-title">出口坐标</h2></div>
                     <div class="panel-note">服务端观测结果优先于本地 Fake-IP</div>
                 </div>
                 <div class="identity-grid">
@@ -939,7 +973,7 @@ const html = `
 
             <section class="panel panel-signals">
                 <div class="panel-head">
-                    <div><div class="panel-index">04 / SIGNALS</div><h2 class="panel-title">结论矩阵</h2></div>
+                    <div><div class="panel-index">03 / SIGNALS</div><h2 class="panel-title">结论矩阵</h2></div>
                     <div class="panel-note">身份、风险、AI 与流媒体分别判读</div>
                 </div>
                 <div class="matrix">
@@ -952,10 +986,10 @@ const html = `
                 </div>
             </section>
 
-            <section class="panel panel-latency">
+            <section class="panel panel-performance">
                 <div class="panel-head">
-                    <div><div class="panel-index">01 / LATENCY</div><h2 class="panel-title">延迟与 GPT 链路</h2></div>
-                    <div class="panel-note">手动执行；WS 域名采用 4 次 HTTPS 前置链路检测</div>
+                    <div><div class="panel-index">01 / PERFORMANCE</div><h2 class="panel-title">延迟、GPT 链路与下载速度</h2></div>
+                    <div class="panel-note">延迟检测完成后执行渐进下载，避免测速干扰延迟</div>
                 </div>
                 <div class="performance-grid">
                     <article class="measure">
@@ -988,19 +1022,6 @@ const html = `
                         <div class="measure-foot"><span id="gpt-api-success">—</span><span id="gpt-api-range">—</span></div>
                         <div class="measure-method" id="gpt-api-method">API 参考 · 4 次认证层请求</div>
                     </article>
-                </div>
-                <div class="performance-actions">
-                    <button class="performance-action" id="latency-button" type="button">测试延迟与 GPT 链路</button>
-                    <div class="performance-status" id="latency-status" aria-live="polite">尚未测试；点击按钮后才会发起请求</div>
-                </div>
-            </section>
-
-            <section class="panel panel-speed">
-                <div class="panel-head">
-                    <div><div class="panel-index">02 / SPEED</div><h2 class="panel-title">下载速度</h2></div>
-                    <div class="panel-note">独立手动测试；保留原渐进下载逻辑</div>
-                </div>
-                <div class="performance-grid">
                     <article class="measure">
                         <div class="measure-top"><span class="measure-name">最终成功阶段速度</span><span class="measure-number" id="speed-number">—<small>Mbps</small></span></div>
                         <div class="bars" id="speed-bars"></div>
@@ -1009,14 +1030,14 @@ const html = `
                     </article>
                 </div>
                 <div class="performance-actions">
-                    <button class="performance-action" id="speed-button" type="button">测试下载速度</button>
-                    <div class="performance-status" id="speed-status" aria-live="polite">尚未测试；点击按钮后才会消耗测速流量</div>
+                    <button class="performance-action" id="performance-button" type="button">测试延迟和下载速度</button>
+                    <div class="performance-status" id="performance-status" aria-live="polite">尚未测试；点击后依次执行延迟与渐进下载</div>
                 </div>
             </section>
 
             <section class="panel">
                 <div class="panel-head">
-                    <div><div class="panel-index">05 / REPUTATION</div><h2 class="panel-title">公开信誉源</h2></div>
+                    <div><div class="panel-index">04 / REPUTATION</div><h2 class="panel-title">公开信誉源</h2></div>
                     <div class="panel-note">超时与限流一律显示未知</div>
                 </div>
                 <div class="source-list">
@@ -1031,7 +1052,7 @@ const html = `
 
             <section class="panel">
                 <div class="panel-head">
-                    <div><div class="panel-index">06 / AI SERVICES</div><h2 class="panel-title">AI 服务</h2></div>
+                    <div><div class="panel-index">05 / AI SERVICES</div><h2 class="panel-title">AI 服务</h2></div>
                     <div class="panel-note">仅显示入口是否可达与请求延迟</div>
                 </div>
                 <div class="service-grid" id="service-grid"></div>
@@ -1039,7 +1060,7 @@ const html = `
 
             <section class="panel">
                 <div class="panel-head">
-                    <div><div class="panel-index">07 / STREAMING</div><h2 class="panel-title">流媒体解锁</h2></div>
+                    <div><div class="panel-index">06 / STREAMING</div><h2 class="panel-title">流媒体解锁</h2></div>
                     <div class="panel-note">页面级地区探测，不验证账号、DRM 或实际播放</div>
                 </div>
                 <div class="streaming-grid" id="streaming-grid"></div>
@@ -1053,8 +1074,7 @@ const html = `
     <script>
         (function () {
             var button = document.getElementById("run-button");
-            var latencyButton = document.getElementById("latency-button");
-            var speedButton = document.getElementById("speed-button");
+            var performanceButton = document.getElementById("performance-button");
             var dashboard = document.getElementById("dashboard");
             var fatal = document.getElementById("fatal");
             var progressTimer = null;
@@ -1367,7 +1387,7 @@ const html = `
 
             function renderMeta(data) {
                 var meta = data.meta || {};
-                text("meta-profile", "v" + (meta.version || "2.8.0"));
+                text("meta-profile", "v" + (meta.version || "2.8.1"));
             }
 
             function render(data) {
@@ -1386,15 +1406,12 @@ const html = `
 
             async function run() {
                 button.disabled = true;
-                latencyButton.disabled = true;
-                speedButton.disabled = true;
+                performanceButton.disabled = true;
                 button.textContent = "正在执行完整检测…";
                 fatal.classList.remove("show");
                 byId("warnings").classList.remove("show");
-                byId("latency-status").classList.remove("error");
-                byId("speed-status").classList.remove("error");
-                text("latency-status", "完整检测将自动执行延迟与 GPT 链路");
-                text("speed-status", "延迟完成后自动执行渐进下载测速");
+                byId("performance-status").classList.remove("error");
+                text("performance-status", "完整检测将先执行延迟与 GPT 链路，再执行渐进下载测速");
                 document.body.classList.remove("is-ready");
                 document.body.classList.add("is-running");
                 text("live-text", "扫描中");
@@ -1410,8 +1427,7 @@ const html = `
                     render(data);
                     renderLatency(data);
                     renderSpeed(data);
-                    text("latency-status", resultStatusText(data, "完整检测的延迟结果"));
-                    text("speed-status", resultStatusText(data, "完整检测的速度结果"));
+                    text("performance-status", resultStatusText(data, "完整检测的性能结果"));
                     button.textContent = "重新检测当前节点";
                 } catch (error) {
                     stopProgress(false);
@@ -1422,8 +1438,7 @@ const html = `
                     button.textContent = "重试完整检测";
                 } finally {
                     button.disabled = false;
-                    latencyButton.disabled = false;
-                    speedButton.disabled = false;
+                    performanceButton.disabled = false;
                 }
             }
 
@@ -1437,52 +1452,29 @@ const html = `
                 return updatedText;
             }
 
-            async function rerunLatency() {
-                latencyButton.disabled = true;
-                latencyButton.textContent = "正在测试延迟与 GPT 链路…";
-                byId("latency-status").classList.remove("error");
-                text("latency-status", "正在执行 Cloudflare、Google 与 GPT HTTPS 链路检测");
-
+            async function rerunPerformance() {
+                performanceButton.disabled = true;
+                performanceButton.textContent = "正在测试延迟和下载速度…";
+                byId("performance-status").classList.remove("error");
+                text("performance-status", "正在测试延迟与 GPT 链路；完成后继续渐进下载测速");
                 try {
-                    var response = await fetch("/api?mode=latency&r=" + Date.now(), { cache: "no-store", headers: { "Accept": "application/json" } });
-                    var data = await response.json();
-                    if (!response.ok || data.error) {
-                        throw new Error(data.detail || data.error || "HTTP " + response.status);
-                    }
-                    renderLatency(data);
-                    text("latency-status", resultStatusText(data, "延迟结果"));
-                } catch (error) {
-                    text("latency-status", "延迟测试失败：" + (error && error.message ? error.message : String(error)));
-                    byId("latency-status").classList.add("error");
-                } finally {
-                    latencyButton.textContent = "重新测试延迟与 GPT 链路";
-                    latencyButton.disabled = false;
-                }
-            }
-
-            async function rerunSpeed() {
-                speedButton.disabled = true;
-                speedButton.textContent = "正在测试下载速度…";
-                byId("speed-status").classList.remove("error");
-                text("speed-status", "正在执行渐进下载测速；此操作会消耗流量");
-                try {
-                    var response = await fetch("/api?mode=speed&r=" + Date.now(), { cache: "no-store", headers: { "Accept": "application/json" } });
+                    var response = await fetch("/api?mode=performance&r=" + Date.now(), { cache: "no-store", headers: { "Accept": "application/json" } });
                     var data = await response.json();
                     if (!response.ok || data.error) throw new Error(data.detail || data.error || "HTTP " + response.status);
+                    renderLatency(data);
                     renderSpeed(data);
-                    text("speed-status", resultStatusText(data, "速度结果"));
+                    text("performance-status", resultStatusText(data, "性能结果"));
                 } catch (error) {
-                    text("speed-status", "速度测试失败：" + (error && error.message ? error.message : String(error)));
-                    byId("speed-status").classList.add("error");
+                    text("performance-status", "性能测试失败：" + (error && error.message ? error.message : String(error)));
+                    byId("performance-status").classList.add("error");
                 } finally {
-                    speedButton.textContent = "重新测试下载速度";
-                    speedButton.disabled = false;
+                    performanceButton.textContent = "重新测试延迟和下载速度";
+                    performanceButton.disabled = false;
                 }
             }
 
             button.addEventListener("click", run);
-            latencyButton.addEventListener("click", rerunLatency);
-            speedButton.addEventListener("click", rerunSpeed);
+            performanceButton.addEventListener("click", rerunPerformance);
         }());
     </script>
 </body>
