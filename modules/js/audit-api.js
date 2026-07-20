@@ -1,4 +1,4 @@
-const VERSION = "2.4.0";
+const VERSION = "2.5.0";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -747,49 +747,56 @@ function buildWarnings(exit, reputation, latency, bandwidth) {
     if (!exit.ipv6) warnings.push("IPv6 出口未检测到；这不代表 IPv6 一定不可用，可能是节点或探针不支持。");
     if (!reputation.blackbox.available) warnings.push("Blackbox 数据源不可用，相关代理与 Spamhaus 信号记为未知。");
     if (!reputation.ipquery.available) warnings.push("IPQuery 数据源不可用，相关机房与代理标记记为未知。");
-    if (latency.targets && latency.targets.length) {
+    if (latency && latency.targets && latency.targets.length) {
         latency.targets.forEach(function (target) {
             if (target.success < target.rounds) warnings.push(target.label + " HTTPS 延迟探测成功 " + target.success + "/" + target.rounds + "，失败样本未计入中位数。");
         });
-    } else if (latency.success < latency.rounds) {
+    } else if (latency && latency.success < latency.rounds) {
         warnings.push("HTTPS 延迟探测成功 " + latency.success + "/" + latency.rounds + "，失败样本未计入中位数。");
     }
-    if (bandwidth.warmup && !bandwidth.warmup.ok) warnings.push("渐进下载预热失败，后续速度结果可能不可用。");
-    const speedSuccess = bandwidth.samples.filter(function (sample) { return sample.ok; }).length;
-    if (speedSuccess < bandwidth.runs) warnings.push("下载测速成功 " + speedSuccess + "/" + bandwidth.runs + "，结果可能不完整。");
+    if (bandwidth) {
+        if (bandwidth.warmup && !bandwidth.warmup.ok) warnings.push("渐进下载预热失败，后续速度结果可能不可用。");
+        const speedSuccess = (bandwidth.samples || []).filter(function (sample) { return sample.ok; }).length;
+        if (speedSuccess < bandwidth.runs) warnings.push("下载测速成功 " + speedSuccess + "/" + bandwidth.runs + "，结果可能不完整。");
+    }
     return warnings;
 }
 
-async function runAudit() {
+async function runAudit(includePerformance) {
     const startedAt = Date.now();
     const exitPromise = collectExit();
-    const latencyPromise = collectLatency();
+    const latencyPromise = includePerformance ? collectLatency() : null;
     const servicesPromise = collectServices();
     const streamingPromise = collectStreaming();
 
     const exit = await exitPromise;
     const reputationPromise = collectReputation(exit.observedIp || exit.ipv4);
-    const latency = await latencyPromise;
+    const latency = latencyPromise ? await latencyPromise : null;
     const auxiliaryResults = await Promise.all([reputationPromise, servicesPromise, streamingPromise]);
     const reputation = auxiliaryResults[0];
     const services = auxiliaryResults[1];
     const streaming = auxiliaryResults[2];
-    const bandwidth = await collectBandwidth();
+    const bandwidth = includePerformance ? await collectBandwidth() : null;
     const assessment = buildAssessment(exit, reputation, services, streaming);
 
     return {
         meta: {
             version: VERSION,
-            profile: SETTINGS.profile,
+            profile: includePerformance ? SETTINGS.profile : "automatic",
             checkedAt: new Date().toISOString(),
             elapsedMs: Date.now() - startedAt,
             settings: SETTINGS
         },
         exit: exit,
         assessment: assessment,
-        performance: {
+        performance: includePerformance ? {
+            deferred: false,
             latency: latency,
             bandwidth: bandwidth
+        } : {
+            deferred: true,
+            latency: { targets: [], samples: [], rounds: 0, success: 0 },
+            bandwidth: { samples: [], runs: 0, approximateTrafficMb: 0 }
         },
         reputation: reputation,
         services: services,
@@ -819,8 +826,9 @@ async function runPerformance() {
 
 const requestUrl = typeof $request !== "undefined" && $request.url ? String($request.url) : "";
 const performanceOnly = /(?:[?&])mode=performance(?:&|$)/.test(requestUrl);
+const fullAudit = /(?:[?&])mode=full(?:&|$)/.test(requestUrl);
 
-(performanceOnly ? runPerformance() : runAudit()).then(function (result) {
+(performanceOnly ? runPerformance() : runAudit(fullAudit)).then(function (result) {
     $done({
         response: {
             status: 200,
