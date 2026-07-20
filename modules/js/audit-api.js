@@ -1,4 +1,4 @@
-const VERSION = "2.6.0";
+const VERSION = "2.6.1";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -222,8 +222,24 @@ function locationEntry(ip, data, fallback) {
         country: location.country || fallbackData.country || null,
         countryCode: String(location.country_code || fallbackData.countryCode || "").toUpperCase() || null,
         city: location.city || fallbackData.city || null,
+        source: (data || {}).lookupSource || (fallbackData.countryCode ? "exit snapshot" : null),
         error: ip ? ((data || {}).error || null) : "address unavailable"
     };
+}
+
+async function lookupIpLocation(ip) {
+    const endpoints = ["https://us.ipapi.is/?q=", "https://api.ipapi.is/?q="];
+    let lastError = "unavailable";
+    for (let index = 0; index < endpoints.length; index += 1) {
+        const result = await fetchUrl(endpoints[index] + encodeURIComponent(ip), { timeout: 12 });
+        const data = parseJson(result) || {};
+        if (!data.error && data.ip && (data.location || {}).country_code) {
+            data.lookupSource = endpoints[index].indexOf("us.ipapi.is") !== -1 ? "us.ipapi.is" : "api.ipapi.is";
+            return data;
+        }
+        lastError = data.error || result.error || (result.status ? "HTTP " + result.status : "unavailable");
+    }
+    return { ip: ip, error: lastError };
 }
 
 async function collectFamilyGeography(exit) {
@@ -234,11 +250,7 @@ async function collectFamilyGeography(exit) {
             ip: ip,
             location: { country: exit.country, country_code: exit.countryCode, city: exit.city }
         });
-        return fetchUrl("https://api.ipapi.is/?q=" + encodeURIComponent(ip), { timeout: 12 }).then(function (result) {
-            const data = parseJson(result) || {};
-            if (!data.error && data.ip) return data;
-            return { ip: ip, error: data.error || result.error || (result.status ? "HTTP " + result.status : "unavailable") };
-        });
+        return lookupIpLocation(ip);
     });
     const results = await Promise.all(lookups);
     return {
@@ -466,6 +478,39 @@ function aiRestrictionDetail(result) {
     return patterns.some(function (pattern) { return pattern.test(text); }) ? "页面明确提示国家/地区不受支持" : null;
 }
 
+function decodeEscapedUnicode(text) {
+    return String(text || "").replace(/\\u([0-9a-f]{4})/gi, function (_, code) {
+        return String.fromCharCode(parseInt(code, 16));
+    });
+}
+
+function googleSearchRegionProbe(result) {
+    const finalUrl = String(result.finalUrl || result.url || "");
+    const body = decodeEscapedUnicode(resultBody(result));
+    const text = body
+        .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;|&#160;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/\s+/g, " ");
+    const chinaRedirect = /(?:^|\.)google\.cn(?:\/|$)/i.test(finalUrl);
+    const chinaPlace = /(?:中国|广东(?:省)?|China|Guangdong)/i.test(text);
+    const locationBasis = /(?:根据您(?:的)?\s*(?:所在位置|IP\s*地址|互联网地址)|基于您(?:的)?\s*(?:活动记录|所在位置)|from your (?:ip|internet) address|based on your (?:past )?activity|precise location)/i.test(text);
+    const locationMatch = text.match(/(?:中国|广东(?:省)?|China|Guangdong)/i);
+    return {
+        available: result.status >= 200 && result.status < 400,
+        status: result.status,
+        ms: result.ms,
+        finalUrl: finalUrl,
+        isChina: chinaRedirect || (chinaPlace && locationBasis),
+        location: locationMatch ? locationMatch[0] : null,
+        basis: chinaRedirect ? "google.cn 跳转" : (chinaPlace && locationBasis ? "搜索页地区页脚" : null),
+        detail: chinaRedirect ? "Google 跳转到中国域名" : (chinaPlace && locationBasis ? "搜索页返回中国地区标记" : "未读取到中国地区页脚"),
+        error: result.error || null
+    };
+}
+
 function aiWebsiteProbe(result) {
     const restriction = aiRestrictionDetail(result);
     if (restriction) {
@@ -577,7 +622,8 @@ async function collectServices() {
         fetchUrl("https://api.anthropic.com/v1/models", { timeout: 12, headers: { "anthropic-version": "2023-06-01" } }),
         fetchUrl("https://generativelanguage.googleapis.com/v1beta/models", { timeout: 12 }),
         fetchUrl("https://api.x.ai/v1/models", { timeout: 12 }),
-        fetchUrl("https://api.perplexity.ai/models", { timeout: 12 })
+        fetchUrl("https://api.perplexity.ai/models", { timeout: 12 }),
+        fetchUrl("https://www.google.com/search?q=proxy-audit-location-check-" + Date.now() + "&gbv=1", { timeout: 15, headers: browserHeaders })
     ]);
 
     const githubData = parseJson(results[2]) || {};
@@ -593,6 +639,7 @@ async function collectServices() {
             perplexity: { web: aiWebsiteProbe(results[6]), api: aiApiProbe(results[11]) },
             copilot: { web: aiWebsiteProbe(results[7]) }
         },
+        googleSearch: googleSearchRegionProbe(results[12]),
         githubAnonymousCoreRate: {
             available: results[2].status === 200 && githubCore.limit != null,
             remaining: numberOrNull(githubCore.remaining),
@@ -651,6 +698,7 @@ function finalizeServices(raw, exit) {
         perplexity: combineAiService("perplexity", probes.perplexity && probes.perplexity.web, probes.perplexity && probes.perplexity.api, countryCode),
         copilot: combineAiService("copilot", probes.copilot && probes.copilot.web, null, countryCode),
         probes: probes,
+        googleSearch: (raw || {}).googleSearch || {},
         regionPolicyVersion: AI_REGION_POLICY_VERSION,
         githubAnonymousCoreRate: (raw || {}).githubAnonymousCoreRate || {}
     };
@@ -856,6 +904,7 @@ function summarizeChinaRouting(exit, services) {
     const gemini = (services || {}).gemini || {};
     const googleWeb = gemini.web || {};
     const googleApi = gemini.api || {};
+    const googleSearch = (services || {}).googleSearch || {};
     const googleChinaRedirect = [googleWeb.finalUrl, googleApi.finalUrl].some(function (url) {
         return /(?:^|\.)google\.cn(?:\/|$)|googleapis\.cn(?:\/|$)/i.test(String(url || ""));
     });
@@ -870,6 +919,9 @@ function summarizeChinaRouting(exit, services) {
     if (googleChinaRedirect) {
         return { code: "google-cn", label: "Google 路径识别为中国", tone: "danger", detail: familyDetail + " · Google 跳转至 CN" };
     }
+    if (googleSearch.isChina) {
+        return { code: "google-search-cn", label: "Google 搜索地区显示中国", tone: "danger", detail: familyDetail + " · " + (googleSearch.location || "中国") + " · " + (googleSearch.basis || "搜索页信号") };
+    }
     if (googleWeb.state === "reachable" && googleApi.state === "error") {
         return { code: "suspected", label: "疑似 Google 分流送中", tone: "warning", detail: familyDetail + " · Web 正常 / API 失败" };
     }
@@ -879,7 +931,7 @@ function summarizeChinaRouting(exit, services) {
     if (!codes.length) {
         return { code: "unknown", label: "无法判断", tone: "neutral", detail: "IPv4/IPv6 地区数据不足" };
     }
-    return { code: "none", label: "未发现送中", tone: "success", detail: familyDetail + " · Google 入口未见 CN 信号" };
+    return { code: "none", label: "未发现送中", tone: "success", detail: familyDetail + " · Google 后端搜索页未见 CN 信号" };
 }
 
 function summarizeStreaming(streaming) {
