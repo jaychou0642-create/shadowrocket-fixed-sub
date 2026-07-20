@@ -1,4 +1,4 @@
-const VERSION = "2.5.1";
+const VERSION = "2.5.2";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -379,9 +379,41 @@ function serviceEntry(result, state, label, detail) {
     };
 }
 
+function visiblePageText(result) {
+    return resultBody(result)
+        .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;|&#160;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&#39;|&apos;/gi, "'")
+        .replace(/&quot;/gi, '"')
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function aiRestrictionDetail(result) {
+    const text = visiblePageText(result).toLowerCase();
+    if (!text) return null;
+    const patterns = [
+        /not (?:currently )?available in (?:your|this) (?:country|region)/,
+        /not (?:currently )?supported in (?:your|this) (?:country|region)/,
+        /isn't currently supported in (?:your|this) (?:country|region)/,
+        /service (?:is )?not available in (?:your|this) (?:country|region)/,
+        /在(?:此|您所在的|你所在的)?国家\/地区无法使用/,
+        /(?:您|你)所在的国家\/地区不支持/,
+        /当前不支持(?:您|你)所在的国家\/地区/
+    ];
+    return patterns.some(function (pattern) { return pattern.test(text); }) ? "页面明确提示国家/地区不受支持" : null;
+}
+
 function aiWebsiteEntry(result) {
+    const restriction = aiRestrictionDetail(result);
+    if (restriction) {
+        return serviceEntry(result, "blocked", "地区不可用", restriction);
+    }
     if (result.status >= 200 && result.status < 400) {
-        return serviceEntry(result, "reachable", "入口可达", "HTTP " + result.status);
+        return serviceEntry(result, "warning", "网页有响应·模型待实测", "仅验证入口，不验证账号、订阅或模型调用");
     }
     if (result.status === 401) {
         return serviceEntry(result, "warning", "已到达·需登录", "HTTP 401");
@@ -415,21 +447,11 @@ async function collectServices() {
         fetchUrl("https://copilot.microsoft.com/", { timeout: 15, headers: browserHeaders })
     ]);
 
-    let chatgpt;
-    if (results[0].status >= 200 && results[0].status < 400) {
-        chatgpt = serviceEntry(results[0], "reachable", "入口可达", "HTTP " + results[0].status);
-    } else if (results[0].status === 403) {
-        const challenged = results[0].headers["cf-mitigated"] === "challenge";
-        chatgpt = serviceEntry(results[0], "warning", challenged ? "已到达·挑战页" : "已到达·HTTP 403", "不代表账号或模型不可用");
-    } else if (results[0].status > 0) {
-        chatgpt = serviceEntry(results[0], "warning", "已响应", "HTTP " + results[0].status);
-    } else {
-        chatgpt = serviceEntry(results[0], "error", "传输失败", results[0].error);
-    }
+    const chatgpt = aiWebsiteEntry(results[0]);
 
     let openai;
     if (results[1].status === 401) {
-        openai = serviceEntry(results[1], "reachable", "已到认证层", "未带 API Key 的预期响应");
+        openai = serviceEntry(results[1], "reachable", "已到认证层", "未带 API Key 的预期响应；不代表模型可调用");
     } else if (results[1].status >= 200 && results[1].status < 500) {
         openai = serviceEntry(results[1], "warning", "已响应", "HTTP " + results[1].status);
     } else {
@@ -631,18 +653,19 @@ function summarizeAiServices(services) {
     if (!items.length) return { code: "unknown", label: "未知", tone: "neutral", detail: "没有 AI 入口检测结果" };
 
     const reachable = items.filter(function (item) { return item.state === "reachable"; }).length;
-    const restricted = items.filter(function (item) { return item.state === "warning"; }).length;
+    const uncertain = items.filter(function (item) { return item.state === "warning"; }).length;
+    const blocked = items.filter(function (item) { return item.state === "blocked"; }).length;
     const failed = items.filter(function (item) { return item.state === "error" || !item.status; }).length;
     const responded = items.length - failed;
     let tone = "warning";
     if (reachable === items.length) tone = "success";
-    else if (!responded) tone = "danger";
+    else if (!responded || blocked === items.length) tone = "danger";
 
     return {
         code: responded ? (reachable === items.length ? "reachable" : "mixed") : "unreachable",
         label: responded ? responded + "/" + items.length + " 入口有响应" : "入口均失败",
         tone: tone,
-        detail: reachable + " 可达 · " + restricted + " 认证/挑战 · " + failed + " 失败；不验证模型调用"
+        detail: reachable + " 到达认证层 · " + uncertain + " 网页响应/待实测 · " + blocked + " 地区受限 · " + failed + " 失败"
     };
 }
 
