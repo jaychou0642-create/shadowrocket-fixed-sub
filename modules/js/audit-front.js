@@ -238,6 +238,15 @@ const html = `
             font-size: 11px;
         }
 
+        .version-line {
+            margin-top: 12px;
+            color: #7892a3;
+            font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-align: right;
+        }
+
         .scan {
             margin-top: 14px;
             padding: 16px 17px;
@@ -348,6 +357,9 @@ const html = `
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
         }
+
+        .panel-latency { order: -2; }
+        .panel-speed { order: -1; }
 
         .panel-head {
             display: flex;
@@ -571,8 +583,7 @@ const html = `
 
         #cloudflare-latency-number { color: var(--cyan); }
         #google-latency-number { color: var(--green); }
-        #gpt-web-number,
-        #gpt-static-number { color: var(--cyan); }
+        #gpt-web-number { color: var(--cyan); }
         #gpt-ws-number { color: var(--green); }
         #gpt-api-number { color: var(--violet); }
 
@@ -892,16 +903,7 @@ const html = `
             <div class="live-chip"><span class="live-dot"></span><span id="live-text">待命</span></div>
         </header>
 
-        <section class="hero">
-            <p class="eyebrow" id="hero-kicker">ON-DEMAND AUDIT</p>
-            <h1 id="hero-title">看清出口，而不是猜一个“纯净分”</h1>
-            <p class="hero-copy" id="hero-copy">所有检测均由按钮手动触发；基础检测、延迟与下载速度互相独立，打开页面不会发起测试请求。</p>
-            <div class="hero-meta">
-                <span class="meta-chip" id="meta-profile">手动检测</span>
-                <span class="meta-chip" id="meta-time">尚未检测</span>
-                <span class="meta-chip" id="meta-elapsed">链路样本按需测试</span>
-            </div>
-        </section>
+        <div class="version-line" id="meta-profile">v2.7.1</div>
 
         <section class="scan" aria-live="polite">
             <div class="scan-head">
@@ -921,9 +923,9 @@ const html = `
         <div class="fatal" id="fatal"></div>
 
         <div class="dashboard" id="dashboard">
-            <section class="panel">
+            <section class="panel panel-exit">
                 <div class="panel-head">
-                    <div><div class="panel-index">01 / EXIT</div><h2 class="panel-title">出口坐标</h2></div>
+                    <div><div class="panel-index">03 / EXIT</div><h2 class="panel-title">出口坐标</h2></div>
                     <div class="panel-note">服务端观测结果优先于本地 Fake-IP</div>
                 </div>
                 <div class="identity-grid">
@@ -935,9 +937,9 @@ const html = `
                 </div>
             </section>
 
-            <section class="panel">
+            <section class="panel panel-signals">
                 <div class="panel-head">
-                    <div><div class="panel-index">02 / SIGNALS</div><h2 class="panel-title">结论矩阵</h2></div>
+                    <div><div class="panel-index">04 / SIGNALS</div><h2 class="panel-title">结论矩阵</h2></div>
                     <div class="panel-note">身份、风险、AI 与流媒体分别判读</div>
                 </div>
                 <div class="matrix">
@@ -950,9 +952,9 @@ const html = `
                 </div>
             </section>
 
-            <section class="panel">
+            <section class="panel panel-latency">
                 <div class="panel-head">
-                    <div><div class="panel-index">03 / LATENCY</div><h2 class="panel-title">延迟与 GPT 链路</h2></div>
+                    <div><div class="panel-index">01 / LATENCY</div><h2 class="panel-title">延迟与 GPT 链路</h2></div>
                     <div class="panel-note">手动执行；WebSocket 3 次真实握手并各保持 10 秒</div>
                 </div>
                 <div class="performance-grid">
@@ -981,12 +983,6 @@ const html = `
                         <div class="measure-method" id="gpt-ws-method">3 次真实握手，各保持 10 秒</div>
                     </article>
                     <article class="measure">
-                        <div class="measure-top"><span class="measure-name">ChatGPT 静态资源中位数</span><span class="measure-number" id="gpt-static-number">—<small>ms</small></span></div>
-                        <div class="bars" id="gpt-static-bars"></div>
-                        <div class="measure-foot"><span id="gpt-static-success">—</span><span id="gpt-static-range">—</span></div>
-                        <div class="measure-method" id="gpt-static-method">动态提取页面资源后测试 2 次</div>
-                    </article>
-                    <article class="measure">
                         <div class="measure-top"><span class="measure-name">OpenAI API 中位数</span><span class="measure-number" id="gpt-api-number">—<small>ms</small></span></div>
                         <div class="bars" id="gpt-api-bars"></div>
                         <div class="measure-foot"><span id="gpt-api-success">—</span><span id="gpt-api-range">—</span></div>
@@ -999,9 +995,9 @@ const html = `
                 </div>
             </section>
 
-            <section class="panel">
+            <section class="panel panel-speed">
                 <div class="panel-head">
-                    <div><div class="panel-index">04 / SPEED</div><h2 class="panel-title">下载速度</h2></div>
+                    <div><div class="panel-index">02 / SPEED</div><h2 class="panel-title">下载速度</h2></div>
                     <div class="panel-note">独立手动测试；保留原渐进下载逻辑</div>
                 </div>
                 <div class="performance-grid">
@@ -1225,9 +1221,6 @@ const html = `
                 renderSignal("signal-sharing", "signal-sharing-detail", assessment.sharingPressure);
                 renderSignal("signal-ai", "signal-ai-detail", assessment.aiServices);
                 renderSignal("signal-streaming", "signal-streaming-detail", assessment.streamingAccess);
-                text("hero-kicker", "AUDIT COMPLETE · " + ((assessment.proxyDetectability || {}).label || "信号已汇总"));
-                text("hero-title", "当前出口画像已生成");
-                text("hero-copy", assessment.verdict || "检测完成，详细结果见下方。 ");
             }
 
             function latencyTarget(latency, id) {
@@ -1258,7 +1251,10 @@ const html = `
 
             function renderGptTarget(prefix, target, unavailableText) {
                 target = target || {};
-                byId(prefix + "-number").innerHTML = escapeHtml(target.medianMs == null ? "—" : target.medianMs) + "<small>ms</small>";
+                var tested = (target.rounds || 0) > 0;
+                byId(prefix + "-number").innerHTML = target.medianMs == null
+                    ? escapeHtml(tested ? "失败" : "—")
+                    : escapeHtml(target.medianMs) + "<small>ms</small>";
                 renderBars(prefix + "-bars", target.samples || [], "ms", prefix === "gpt-ws" ? "google" : "", null);
                 text(prefix + "-success", "成功 " + (target.success || 0) + "/" + (target.rounds || 0));
                 text(prefix + "-range", target.minimumMs == null ? (unavailableText || "无有效样本") : "范围 " + target.minimumMs + "–" + target.maximumMs + " ms");
@@ -1271,12 +1267,8 @@ const html = `
                 renderLatencyTarget("cloudflare", latencyTarget(latency, "cloudflare"));
                 renderLatencyTarget("google", latencyTarget(latency, "google"));
                 renderGptTarget("gpt-web", gpt.web);
-                renderGptTarget("gpt-ws", gpt.websocket);
-                renderGptTarget("gpt-static", gpt.static, "未提取到静态资源");
+                renderGptTarget("gpt-ws", gpt.websocket, "握手失败；浏览器未提供具体状态");
                 renderGptTarget("gpt-api", gpt.api);
-                text("gpt-static-method", gpt.static && gpt.static.assetHost
-                    ? "动态资源 · " + gpt.static.assetHost + " · 测试 2 次"
-                    : "未从 ChatGPT 页面提取到 oaistatic.com 资源");
             }
 
             function renderSpeed(data) {
@@ -1430,10 +1422,7 @@ const html = `
 
             function renderMeta(data) {
                 var meta = data.meta || {};
-                var checked = meta.checkedAt ? new Date(meta.checkedAt) : null;
-                text("meta-profile", (meta.profile === "automatic" ? "AUTO" : "FULL") + " · v" + (meta.version || "—"));
-                text("meta-time", checked && !isNaN(checked.getTime()) ? checked.toLocaleString("zh-CN", { hour12: false }) : "时间未知");
-                text("meta-elapsed", meta.elapsedMs == null ? "耗时未知" : "总耗时 " + (meta.elapsedMs / 1000).toFixed(1) + " 秒");
+                text("meta-profile", "v" + (meta.version || "2.7.1"));
             }
 
             function render(data) {
@@ -1495,7 +1484,7 @@ const html = `
                 latencyButton.disabled = true;
                 latencyButton.textContent = "正在测试延迟与 GPT 链路…";
                 byId("latency-status").classList.remove("error");
-                text("latency-status", "正在执行 HTTPS、静态资源与 3 次 WebSocket 真实握手，请稍候约 10–20 秒");
+                text("latency-status", "正在执行 HTTPS 与 3 次 WebSocket 真实握手，请稍候约 10–20 秒");
 
                 try {
                     var results = await Promise.all([
