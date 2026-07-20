@@ -903,7 +903,7 @@ const html = `
             <div class="live-chip"><span class="live-dot"></span><span id="live-text">待命</span></div>
         </header>
 
-        <div class="version-line" id="meta-profile">v2.7.1</div>
+        <div class="version-line" id="meta-profile">v2.8.0</div>
 
         <section class="scan" aria-live="polite">
             <div class="scan-head">
@@ -955,7 +955,7 @@ const html = `
             <section class="panel panel-latency">
                 <div class="panel-head">
                     <div><div class="panel-index">01 / LATENCY</div><h2 class="panel-title">延迟与 GPT 链路</h2></div>
-                    <div class="panel-note">手动执行；WebSocket 3 次真实握手并各保持 10 秒</div>
+                    <div class="panel-note">手动执行；WS 域名采用 4 次 HTTPS 前置链路检测</div>
                 </div>
                 <div class="performance-grid">
                     <article class="measure">
@@ -977,10 +977,10 @@ const html = `
                         <div class="measure-method" id="gpt-web-method">4 次完整 HTTPS 请求</div>
                     </article>
                     <article class="measure">
-                        <div class="measure-top"><span class="measure-name">ChatGPT WebSocket 握手中位数</span><span class="measure-number" id="gpt-ws-number">—<small>ms</small></span></div>
+                        <div class="measure-top"><span class="measure-name">ChatGPT WS 域名 HTTPS 中位数</span><span class="measure-number" id="gpt-ws-number">—<small>ms</small></span></div>
                         <div class="bars" id="gpt-ws-bars"></div>
                         <div class="measure-foot"><span id="gpt-ws-success">—</span><span id="gpt-ws-range">—</span></div>
-                        <div class="measure-method" id="gpt-ws-method">3 次真实握手，各保持 10 秒</div>
+                        <div class="measure-method" id="gpt-ws-method">4 次 HTTPS 前置检测 · 非登录态 WebSocket 握手</div>
                     </article>
                     <article class="measure">
                         <div class="measure-top"><span class="measure-name">OpenAI API 中位数</span><span class="measure-number" id="gpt-api-number">—<small>ms</small></span></div>
@@ -1267,7 +1267,7 @@ const html = `
                 renderLatencyTarget("cloudflare", latencyTarget(latency, "cloudflare"));
                 renderLatencyTarget("google", latencyTarget(latency, "google"));
                 renderGptTarget("gpt-web", gpt.web);
-                renderGptTarget("gpt-ws", gpt.websocket, "握手失败；浏览器未提供具体状态");
+                renderGptTarget("gpt-ws", gpt.websocket, "WS 域名 HTTPS 请求失败");
                 renderGptTarget("gpt-api", gpt.api);
             }
 
@@ -1281,61 +1281,6 @@ const html = `
                 text("speed-range", bandwidth.minimumMbps == null ? "无有效样本" : "范围 " + bandwidth.minimumMbps + "–" + bandwidth.maximumMbps + " Mbps");
                 var traffic = bandwidth.approximateTrafficMb == null ? "流量未知" : "本次约 " + bandwidth.approximateTrafficMb + " MB";
                 text("speed-method", "1 MB 预热 · 5 → 10 → 25 MB 按需执行 · " + traffic);
-            }
-
-            function summarizeClientTiming(id, label, samples, rounds) {
-                var values = samples.filter(function (sample) { return sample.ok && sample.ms != null; }).map(function (sample) { return Number(sample.ms); }).sort(function (a, b) { return a - b; });
-                var middle = Math.floor(values.length / 2);
-                var medianValue = values.length ? (values.length % 2 ? values[middle] : (values[middle - 1] + values[middle]) / 2) : null;
-                return {
-                    id: id,
-                    label: label,
-                    rounds: rounds,
-                    success: values.length,
-                    samples: samples,
-                    medianMs: medianValue == null ? null : Math.round(medianValue),
-                    minimumMs: values.length ? Math.min.apply(null, values) : null,
-                    maximumMs: values.length ? Math.max.apply(null, values) : null
-                };
-            }
-
-            function testWebSocketRound(run) {
-                return new Promise(function (resolve) {
-                    var socket;
-                    var openedAt = 0;
-                    var settled = false;
-                    var startedAt = Date.now();
-                    var holdTimer = null;
-                    var timeoutTimer = null;
-                    function finish(ok, error) {
-                        if (settled) return;
-                        settled = true;
-                        if (holdTimer) clearTimeout(holdTimer);
-                        if (timeoutTimer) clearTimeout(timeoutTimer);
-                        var handshakeMs = openedAt ? openedAt - startedAt : null;
-                        try { if (socket && socket.readyState < 2) socket.close(1000, "audit complete"); } catch (_) {}
-                        resolve({ run: run, ok: ok, ms: handshakeMs, heldMs: openedAt ? Date.now() - openedAt : 0, error: error || null });
-                    }
-                    try {
-                        socket = new WebSocket("wss://ws.chatgpt.com/");
-                        timeoutTimer = setTimeout(function () { finish(false, "握手超时"); }, 15000);
-                        socket.onopen = function () {
-                            openedAt = Date.now();
-                            holdTimer = setTimeout(function () { finish(true, null); }, 10000);
-                        };
-                        socket.onerror = function () { finish(false, "WebSocket 错误"); };
-                        socket.onclose = function () {
-                            if (!settled) finish(false, openedAt ? "连接未保持满 10 秒" : "握手未成功");
-                        };
-                    } catch (error) {
-                        finish(false, error && error.message ? error.message : String(error));
-                    }
-                });
-            }
-
-            async function collectWebSocketTiming() {
-                var samples = await Promise.all([testWebSocketRound(1), testWebSocketRound(2), testWebSocketRound(3)]);
-                return summarizeClientTiming("websocket", "ChatGPT WebSocket", samples, 3);
             }
 
             function renderReputation(data) {
@@ -1422,7 +1367,7 @@ const html = `
 
             function renderMeta(data) {
                 var meta = data.meta || {};
-                text("meta-profile", "v" + (meta.version || "2.7.1"));
+                text("meta-profile", "v" + (meta.version || "2.8.0"));
             }
 
             function render(data) {
@@ -1441,22 +1386,32 @@ const html = `
 
             async function run() {
                 button.disabled = true;
-                button.textContent = "正在扫描当前出口…";
+                latencyButton.disabled = true;
+                speedButton.disabled = true;
+                button.textContent = "正在执行完整检测…";
                 fatal.classList.remove("show");
                 byId("warnings").classList.remove("show");
+                byId("latency-status").classList.remove("error");
+                byId("speed-status").classList.remove("error");
+                text("latency-status", "完整检测将自动执行延迟与 GPT 链路");
+                text("speed-status", "延迟完成后自动执行渐进下载测速");
                 document.body.classList.remove("is-ready");
                 document.body.classList.add("is-running");
                 text("live-text", "扫描中");
                 beginProgress();
 
                 try {
-                    var response = await fetch("/api", { cache: "no-store", headers: { "Accept": "application/json" } });
+                    var response = await fetch("/api?mode=full&r=" + Date.now(), { cache: "no-store", headers: { "Accept": "application/json" } });
                     var data = await response.json();
                     if (!response.ok || data.error) {
                         throw new Error(data.detail || data.error || "HTTP " + response.status);
                     }
                     stopProgress(true);
                     render(data);
+                    renderLatency(data);
+                    renderSpeed(data);
+                    text("latency-status", resultStatusText(data, "完整检测的延迟结果"));
+                    text("speed-status", resultStatusText(data, "完整检测的速度结果"));
                     button.textContent = "重新检测当前节点";
                 } catch (error) {
                     stopProgress(false);
@@ -1464,9 +1419,11 @@ const html = `
                     text("live-text", "检测失败");
                     fatal.textContent = "检测没有完成：" + (error && error.message ? error.message : String(error)) + "。请确认模块已启用并稍后重试。";
                     fatal.classList.add("show");
-                    button.textContent = "重试基础检测";
+                    button.textContent = "重试完整检测";
                 } finally {
                     button.disabled = false;
+                    latencyButton.disabled = false;
+                    speedButton.disabled = false;
                 }
             }
 
@@ -1484,21 +1441,14 @@ const html = `
                 latencyButton.disabled = true;
                 latencyButton.textContent = "正在测试延迟与 GPT 链路…";
                 byId("latency-status").classList.remove("error");
-                text("latency-status", "正在执行 HTTPS 与 3 次 WebSocket 真实握手，请稍候约 10–20 秒");
+                text("latency-status", "正在执行 Cloudflare、Google 与 GPT HTTPS 链路检测");
 
                 try {
-                    var results = await Promise.all([
-                        fetch("/api?mode=latency&r=" + Date.now(), { cache: "no-store", headers: { "Accept": "application/json" } }),
-                        collectWebSocketTiming()
-                    ]);
-                    var response = results[0];
+                    var response = await fetch("/api?mode=latency&r=" + Date.now(), { cache: "no-store", headers: { "Accept": "application/json" } });
                     var data = await response.json();
                     if (!response.ok || data.error) {
                         throw new Error(data.detail || data.error || "HTTP " + response.status);
                     }
-                    data.performance = data.performance || {};
-                    data.performance.gpt = data.performance.gpt || {};
-                    data.performance.gpt.websocket = results[1];
                     renderLatency(data);
                     text("latency-status", resultStatusText(data, "延迟结果"));
                 } catch (error) {
