@@ -946,17 +946,17 @@ const html = `
                 </div>
                 <div class="performance-grid">
                     <article class="measure">
-                        <div class="measure-top"><span class="measure-name">Cloudflare 延迟</span><span class="measure-number" id="cloudflare-latency-number">—<small>ms</small></span></div>
+                        <div class="measure-top"><span class="measure-name">Cloudflare 延迟中位数</span><span class="measure-number" id="cloudflare-latency-number">—<small>ms</small></span></div>
                         <div class="bars" id="cloudflare-latency-bars"></div>
                         <div class="measure-foot"><span id="cloudflare-latency-success">—</span><span id="cloudflare-latency-range">—</span></div>
                     </article>
                     <article class="measure">
-                        <div class="measure-top"><span class="measure-name">Google 延迟</span><span class="measure-number" id="google-latency-number">—<small>ms</small></span></div>
+                        <div class="measure-top"><span class="measure-name">Google 延迟中位数</span><span class="measure-number" id="google-latency-number">—<small>ms</small></span></div>
                         <div class="bars" id="google-latency-bars"></div>
                         <div class="measure-foot"><span id="google-latency-success">—</span><span id="google-latency-range">—</span></div>
                     </article>
                     <article class="measure">
-                        <div class="measure-top"><span class="measure-name">渐进下载速度</span><span class="measure-number" id="speed-number">—<small>Mbps</small></span></div>
+                        <div class="measure-top"><span class="measure-name">最终成功阶段速度</span><span class="measure-number" id="speed-number">—<small>Mbps</small></span></div>
                         <div class="bars" id="speed-bars"></div>
                         <div class="measure-foot"><span id="speed-success">—</span><span id="speed-range">—</span></div>
                         <div class="measure-method" id="speed-method">1 MB 预热后按需增大数据块</div>
@@ -1227,7 +1227,8 @@ const html = `
                 var bandwidth = performance.bandwidth || {};
                 renderLatencyTarget("cloudflare", latencyTarget(latency, "cloudflare"));
                 renderLatencyTarget("google", latencyTarget(latency, "google"));
-                byId("speed-number").innerHTML = escapeHtml(bandwidth.medianMbps == null ? "—" : bandwidth.medianMbps) + "<small>Mbps</small>";
+                var primarySpeed = bandwidth.finalMbps == null ? bandwidth.medianMbps : bandwidth.finalMbps;
+                byId("speed-number").innerHTML = escapeHtml(primarySpeed == null ? "—" : primarySpeed) + "<small>Mbps</small>";
                 renderBars("speed-bars", bandwidth.samples || [], "mbps", "speed", "sizeLabel");
                 var speedSamples = (bandwidth.samples || []).filter(function (sample) { return sample.ok; }).length;
                 text("speed-success", "成功 " + speedSamples + "/" + (bandwidth.runs || 0));
