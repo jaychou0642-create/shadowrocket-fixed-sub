@@ -1,5 +1,5 @@
 #!name=节点观测站
-#!desc=访问 https://audit.test 对当前代理出口执行完整、只读的身份、信誉、性能、AI入口与流媒体检测
+#!desc=访问 https://audit.test 自动检测当前代理出口的身份、信誉、AI入口与流媒体，链路性能按需测试
 #!author=jaychou0642-create
 #!homepage=https://github.com/jaychou0642-create/shadowrocket-fixed-sub
 
@@ -7,7 +7,7 @@
 # 全新移动端观测面板
 Proxy-Observatory-Front = type=http-request, pattern=^https:\/\/audit\.test\/?(?:\?.*)?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-front.js, timeout=30
 
-# 完整探针：出口身份、8 轮延迟、1 MB 预热与 5 → 10 → 25 MB 渐进测速、信誉源、AI入口与流媒体
+# 自动探针：出口身份、信誉源、AI入口与流媒体；性能按钮执行 8 轮延迟及 1 MB 预热与 5 → 10 → 25 MB 渐进测速
 Proxy-Observatory-API = type=http-request, pattern=^https:\/\/audit\.test\/api\/?(?:\?.*)?$, script-path=https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/modules/js/audit-api.js, timeout=90
 
 [MITM]
