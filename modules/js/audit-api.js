@@ -1,4 +1,4 @@
-const VERSION = "2.7.0";
+const VERSION = "2.7.1";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -443,18 +443,6 @@ function summarizeTimingTarget(id, label, samples, rounds) {
     };
 }
 
-function extractOaiStaticUrl(result) {
-    const source = resultBody(result)
-        .replace(/\\u002f/gi, "/")
-        .replace(/\\u0026/gi, "&")
-        .replace(/\\\//g, "/")
-        .replace(/&amp;/gi, "&");
-    const absolute = source.match(/https?:\/\/[a-z0-9.-]*oaistatic\.com\/[^\s"'<>\\]+/i);
-    if (absolute) return absolute[0];
-    const relative = source.match(/\/\/[a-z0-9.-]*oaistatic\.com\/[^\s"'<>\\]+/i);
-    return relative ? "https:" + relative[0] : null;
-}
-
 async function collectGptHttpDetails() {
     const browserHeaders = {
         "User-Agent": BROWSER_UA,
@@ -463,7 +451,6 @@ async function collectGptHttpDetails() {
     };
     const webSamples = [];
     const apiSamples = [];
-    let homepageResult = null;
 
     for (let roundIndex = 0; roundIndex < 4; roundIndex += 1) {
         const results = await Promise.all([
@@ -472,27 +459,12 @@ async function collectGptHttpDetails() {
         ]);
         const web = results[0];
         const api = results[1];
-        if (!homepageResult && web.status > 0 && resultBody(web)) homepageResult = web;
         webSamples.push({ run: roundIndex + 1, ok: web.status > 0, ms: web.ms, status: web.status, error: web.error });
         apiSamples.push({ run: roundIndex + 1, ok: api.status > 0, ms: api.ms, status: api.status, error: api.error });
     }
 
-    const assetUrl = extractOaiStaticUrl(homepageResult);
-    const staticSamples = [];
-    if (assetUrl) {
-        for (let roundIndex = 0; roundIndex < 2; roundIndex += 1) {
-            const asset = await fetchUrl(assetUrl, { timeout: 20, headers: { "User-Agent": BROWSER_UA } });
-            staticSamples.push({ run: roundIndex + 1, ok: asset.status > 0, ms: asset.ms, status: asset.status, error: asset.error });
-        }
-    }
-
-    const staticTarget = summarizeTimingTarget("static", "ChatGPT 静态资源", staticSamples, 2);
-    staticTarget.assetHost = assetUrl ? String(assetUrl).replace(/^https?:\/\//i, "").split("/")[0] : null;
-    staticTarget.available = !!assetUrl;
-
     return {
         web: summarizeTimingTarget("web", "ChatGPT Web", webSamples, 4),
-        static: staticTarget,
         api: summarizeTimingTarget("api", "OpenAI API（参考）", apiSamples, 4)
     };
 }
