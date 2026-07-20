@@ -1,4 +1,4 @@
-const VERSION = "2.6.1";
+const VERSION = "2.5.2";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -9,31 +9,6 @@ const SETTINGS = {
 };
 
 const BROWSER_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
-
-const AI_REGION_POLICY_VERSION = "2026-07-20";
-const COMMON_AI_REGIONS = "US,CA,GB,AU,NZ,JP,KR,SG,TW,DE,FR,NL,SE,NO,DK,FI,CH,AT,BE,IE,ES,PT,IT,PL,CZ,RO,HU,GR,TR,AE,SA,IN,ID,MY,TH,VN,PH,BR,MX,AR,CL,CO,PE,ZA,IL".split(",");
-const AI_REGION_POLICIES = {
-    chatgpt: {
-        supported: COMMON_AI_REGIONS,
-        unsupported: "CN,HK,MO,RU,BY,IR,KP,SY,CU".split(","),
-        source: "OpenAI ChatGPT supported countries"
-    },
-    claude: {
-        supported: COMMON_AI_REGIONS,
-        unsupported: "CN,HK,MO,RU,BY,IR,KP,SY,CU".split(","),
-        source: "Claude supported locations"
-    },
-    gemini: {
-        supported: COMMON_AI_REGIONS.concat(["HK", "MO"]),
-        unsupported: ["CN", "KP"],
-        source: "Gemini mobile app availability"
-    },
-    copilot: {
-        supported: COMMON_AI_REGIONS.concat(["HK", "MO"]),
-        unsupported: "CN,CU,IR,KP,SY,RU".split(","),
-        source: "Microsoft Copilot supported regions"
-    }
-};
 
 function numberOrNull(value) {
     const parsed = Number(value);
@@ -210,52 +185,6 @@ async function collectExit() {
             ipv6: { available: !!ipv6, error: ipv6 ? null : (results[2].error || "unavailable") },
             cloudflare: { available: !!trace.ip, error: trace.ip ? null : (results[3].error || "unavailable") }
         }
-    };
-}
-
-function locationEntry(ip, data, fallback) {
-    const location = (data || {}).location || {};
-    const fallbackData = fallback || {};
-    return {
-        ip: ip || null,
-        available: !!ip && (!!location.country_code || !!fallbackData.countryCode),
-        country: location.country || fallbackData.country || null,
-        countryCode: String(location.country_code || fallbackData.countryCode || "").toUpperCase() || null,
-        city: location.city || fallbackData.city || null,
-        source: (data || {}).lookupSource || (fallbackData.countryCode ? "exit snapshot" : null),
-        error: ip ? ((data || {}).error || null) : "address unavailable"
-    };
-}
-
-async function lookupIpLocation(ip) {
-    const endpoints = ["https://us.ipapi.is/?q=", "https://api.ipapi.is/?q="];
-    let lastError = "unavailable";
-    for (let index = 0; index < endpoints.length; index += 1) {
-        const result = await fetchUrl(endpoints[index] + encodeURIComponent(ip), { timeout: 12 });
-        const data = parseJson(result) || {};
-        if (!data.error && data.ip && (data.location || {}).country_code) {
-            data.lookupSource = endpoints[index].indexOf("us.ipapi.is") !== -1 ? "us.ipapi.is" : "api.ipapi.is";
-            return data;
-        }
-        lastError = data.error || result.error || (result.status ? "HTTP " + result.status : "unavailable");
-    }
-    return { ip: ip, error: lastError };
-}
-
-async function collectFamilyGeography(exit) {
-    const addresses = [exit.ipv4, exit.ipv6];
-    const lookups = addresses.map(function (ip) {
-        if (!ip) return Promise.resolve(null);
-        if (ip === exit.observedIp && exit.countryCode) return Promise.resolve({
-            ip: ip,
-            location: { country: exit.country, country_code: exit.countryCode, city: exit.city }
-        });
-        return lookupIpLocation(ip);
-    });
-    const results = await Promise.all(lookups);
-    return {
-        ipv4: locationEntry(exit.ipv4, results[0], exit.ipv4 === exit.observedIp ? exit : null),
-        ipv6: locationEntry(exit.ipv6, results[1], exit.ipv6 === exit.observedIp ? exit : null)
     };
 }
 
@@ -478,128 +407,25 @@ function aiRestrictionDetail(result) {
     return patterns.some(function (pattern) { return pattern.test(text); }) ? "页面明确提示国家/地区不受支持" : null;
 }
 
-function decodeEscapedUnicode(text) {
-    return String(text || "").replace(/\\u([0-9a-f]{4})/gi, function (_, code) {
-        return String.fromCharCode(parseInt(code, 16));
-    });
-}
-
-function googleSearchRegionProbe(result) {
-    const finalUrl = String(result.finalUrl || result.url || "");
-    const body = decodeEscapedUnicode(resultBody(result));
-    const text = body
-        .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-        .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;|&#160;/gi, " ")
-        .replace(/&amp;/gi, "&")
-        .replace(/\s+/g, " ");
-    const chinaRedirect = /(?:^|\.)google\.cn(?:\/|$)/i.test(finalUrl);
-    const chinaPlace = /(?:中国|广东(?:省)?|China|Guangdong)/i.test(text);
-    const locationBasis = /(?:根据您(?:的)?\s*(?:所在位置|IP\s*地址|互联网地址)|基于您(?:的)?\s*(?:活动记录|所在位置)|from your (?:ip|internet) address|based on your (?:past )?activity|precise location)/i.test(text);
-    const locationMatch = text.match(/(?:中国|广东(?:省)?|China|Guangdong)/i);
-    return {
-        available: result.status >= 200 && result.status < 400,
-        status: result.status,
-        ms: result.ms,
-        finalUrl: finalUrl,
-        isChina: chinaRedirect || (chinaPlace && locationBasis),
-        location: locationMatch ? locationMatch[0] : null,
-        basis: chinaRedirect ? "google.cn 跳转" : (chinaPlace && locationBasis ? "搜索页地区页脚" : null),
-        detail: chinaRedirect ? "Google 跳转到中国域名" : (chinaPlace && locationBasis ? "搜索页返回中国地区标记" : "未读取到中国地区页脚"),
-        error: result.error || null
-    };
-}
-
-function aiWebsiteProbe(result) {
+function aiWebsiteEntry(result) {
     const restriction = aiRestrictionDetail(result);
     if (restriction) {
-        return { state: "blocked", status: result.status, ms: result.ms, detail: restriction, error: result.error, finalUrl: result.finalUrl };
+        return serviceEntry(result, "blocked", "地区不可用", restriction);
     }
     if (result.status >= 200 && result.status < 400) {
-        return { state: "reachable", status: result.status, ms: result.ms, detail: "Web " + result.status, error: null, finalUrl: result.finalUrl };
+        return serviceEntry(result, "warning", "网页有响应·模型待实测", "仅验证入口，不验证账号、订阅或模型调用");
     }
     if (result.status === 401) {
-        return { state: "auth", status: result.status, ms: result.ms, detail: "Web 401", error: null, finalUrl: result.finalUrl };
+        return serviceEntry(result, "warning", "已到达·需登录", "HTTP 401");
     }
     if (result.status === 403) {
         const challenged = result.headers["cf-mitigated"] === "challenge";
-        return { state: challenged ? "challenge" : "restricted", status: result.status, ms: result.ms, detail: challenged ? "Web 挑战页" : "Web 403", error: null, finalUrl: result.finalUrl };
+        return serviceEntry(result, "warning", challenged ? "已到达·挑战页" : "已到达·HTTP 403", "可能为登录、风控或地区限制");
     }
     if (result.status > 0) {
-        return { state: "responded", status: result.status, ms: result.ms, detail: "Web " + result.status, error: null, finalUrl: result.finalUrl };
+        return serviceEntry(result, "warning", "已响应", "HTTP " + result.status);
     }
-    return { state: "error", status: 0, ms: result.ms, detail: null, error: result.error || "Web unavailable", finalUrl: result.finalUrl };
-}
-
-function aiApiProbe(result) {
-    const restriction = aiRestrictionDetail(result);
-    if (restriction) {
-        return { state: "blocked", status: result.status, ms: result.ms, detail: restriction, error: result.error, finalUrl: result.finalUrl };
-    }
-    if (result.status >= 200 && result.status < 300) {
-        return { state: "reachable", status: result.status, ms: result.ms, detail: "API " + result.status, error: null, finalUrl: result.finalUrl };
-    }
-    if ([400, 401, 403, 405, 429].indexOf(result.status) !== -1) {
-        return { state: "auth", status: result.status, ms: result.ms, detail: "API " + result.status + "（认证响应）", error: null, finalUrl: result.finalUrl };
-    }
-    if (result.status > 0) {
-        return { state: "responded", status: result.status, ms: result.ms, detail: "API " + result.status, error: null, finalUrl: result.finalUrl };
-    }
-    return { state: "error", status: 0, ms: result.ms, detail: null, error: result.error || "API unavailable", finalUrl: result.finalUrl };
-}
-
-function aiRegionStatus(service, countryCode) {
-    const code = String(countryCode || "").toUpperCase();
-    const policy = AI_REGION_POLICIES[service];
-    if (!code || !policy) return { state: "unknown", countryCode: code || null, policyVersion: AI_REGION_POLICY_VERSION };
-    if (policy.unsupported.indexOf(code) !== -1) {
-        return { state: "unsupported", countryCode: code, source: policy.source, policyVersion: AI_REGION_POLICY_VERSION };
-    }
-    if (policy.supported.indexOf(code) !== -1) {
-        return { state: "supported", countryCode: code, source: policy.source, policyVersion: AI_REGION_POLICY_VERSION };
-    }
-    return { state: "unknown", countryCode: code, source: policy.source, policyVersion: AI_REGION_POLICY_VERSION };
-}
-
-function aiProbeDetail(region, web, api) {
-    const parts = [];
-    if (region && region.countryCode) parts.push("出口 " + region.countryCode);
-    if (web) parts.push(web.detail || (web.error ? "Web 失败" : "Web 未知"));
-    if (api) parts.push(api.detail || (api.error ? "API 失败" : "API 未知"));
-    return parts.join(" · ");
-}
-
-function combineAiService(service, web, api, countryCode) {
-    const region = aiRegionStatus(service, countryCode);
-    const detail = aiProbeDetail(region, web, api);
-    const base = {
-        status: web ? web.status : (api ? api.status : 0),
-        ms: web ? web.ms : (api ? api.ms : null),
-        error: (web && web.error) || (api && api.error) || null,
-        detail: detail,
-        region: region,
-        web: web || null,
-        api: api || null
-    };
-    if (region.state === "unsupported") return Object.assign(base, { state: "blocked", label: "出口地区不支持" });
-    if ((web && web.state === "blocked") || (api && api.state === "blocked")) return Object.assign(base, { state: "blocked", label: "服务返回地区限制" });
-
-    const webGood = !!web && ["reachable", "auth"].indexOf(web.state) !== -1;
-    const apiGood = !api || ["reachable", "auth"].indexOf(api.state) !== -1;
-    const webFailed = !web || web.state === "error";
-    const apiFailed = !!api && api.state === "error";
-    if (webFailed && (!api || apiFailed)) return Object.assign(base, { state: "error", label: "入口连接失败" });
-    if (web && web.state === "challenge") return Object.assign(base, { state: "warning", label: "挑战页 / 风控" });
-    if (api && (webFailed !== apiFailed) && (webFailed || apiFailed)) return Object.assign(base, { state: "warning", label: "域名分流不一致" });
-    if (webGood && apiGood) {
-        if (region.state === "supported") return Object.assign(base, { state: "reachable", label: api ? "地区与双入口正常" : "地区与入口正常" });
-        return Object.assign(base, { state: "reachable", label: api ? "双入口正常" : "网页入口正常" });
-    }
-    if ((web && ["restricted", "responded", "auth"].indexOf(web.state) !== -1) || (api && ["restricted", "responded", "auth"].indexOf(api.state) !== -1)) {
-        return Object.assign(base, { state: "warning", label: "入口有响应但受限" });
-    }
-    return Object.assign(base, { state: "warning", label: "结果不完整" });
+    return serviceEntry(result, "error", "传输失败", result.error);
 }
 
 async function collectServices() {
@@ -618,89 +444,37 @@ async function collectServices() {
         fetchUrl("https://gemini.google.com/", { timeout: 15, headers: browserHeaders }),
         fetchUrl("https://grok.com/", { timeout: 15, headers: browserHeaders }),
         fetchUrl("https://www.perplexity.ai/", { timeout: 15, headers: browserHeaders }),
-        fetchUrl("https://copilot.microsoft.com/", { timeout: 15, headers: browserHeaders }),
-        fetchUrl("https://api.anthropic.com/v1/models", { timeout: 12, headers: { "anthropic-version": "2023-06-01" } }),
-        fetchUrl("https://generativelanguage.googleapis.com/v1beta/models", { timeout: 12 }),
-        fetchUrl("https://api.x.ai/v1/models", { timeout: 12 }),
-        fetchUrl("https://api.perplexity.ai/models", { timeout: 12 }),
-        fetchUrl("https://www.google.com/search?q=proxy-audit-location-check-" + Date.now() + "&gbv=1", { timeout: 15, headers: browserHeaders })
+        fetchUrl("https://copilot.microsoft.com/", { timeout: 15, headers: browserHeaders })
     ]);
+
+    const chatgpt = aiWebsiteEntry(results[0]);
+
+    let openai;
+    if (results[1].status === 401) {
+        openai = serviceEntry(results[1], "reachable", "已到认证层", "未带 API Key 的预期响应；不代表模型可调用");
+    } else if (results[1].status >= 200 && results[1].status < 500) {
+        openai = serviceEntry(results[1], "warning", "已响应", "HTTP " + results[1].status);
+    } else {
+        openai = serviceEntry(results[1], "error", "传输失败", results[1].error || "HTTP " + results[1].status);
+    }
 
     const githubData = parseJson(results[2]) || {};
     const githubCore = ((githubData.resources || {}).core || {});
 
     return {
-        probes: {
-            chatgpt: { web: aiWebsiteProbe(results[0]), api: aiApiProbe(results[1]) },
-            openai: { api: aiApiProbe(results[1]) },
-            claude: { web: aiWebsiteProbe(results[3]), api: aiApiProbe(results[8]) },
-            gemini: { web: aiWebsiteProbe(results[4]), api: aiApiProbe(results[9]) },
-            grok: { web: aiWebsiteProbe(results[5]), api: aiApiProbe(results[10]) },
-            perplexity: { web: aiWebsiteProbe(results[6]), api: aiApiProbe(results[11]) },
-            copilot: { web: aiWebsiteProbe(results[7]) }
-        },
-        googleSearch: googleSearchRegionProbe(results[12]),
+        chatgpt: chatgpt,
+        openai: openai,
+        claude: aiWebsiteEntry(results[3]),
+        gemini: aiWebsiteEntry(results[4]),
+        grok: aiWebsiteEntry(results[5]),
+        perplexity: aiWebsiteEntry(results[6]),
+        copilot: aiWebsiteEntry(results[7]),
         githubAnonymousCoreRate: {
             available: results[2].status === 200 && githubCore.limit != null,
             remaining: numberOrNull(githubCore.remaining),
             limit: numberOrNull(githubCore.limit),
             reset: numberOrNull(githubCore.reset)
         }
-    };
-}
-
-function finalizeServices(raw, exit) {
-    const probes = (raw || {}).probes || {};
-    const countryCode = exit.countryCode;
-    const openaiProbe = ((probes.openai || {}).api || null);
-    const openaiRegion = aiRegionStatus("chatgpt", countryCode);
-    let openai;
-    if (openaiRegion.state === "unsupported") {
-        openai = {
-            state: "blocked",
-            label: "出口地区不支持",
-            detail: aiProbeDetail(openaiRegion, null, openaiProbe),
-            status: openaiProbe ? openaiProbe.status : 0,
-            ms: openaiProbe ? openaiProbe.ms : null,
-            error: openaiProbe ? openaiProbe.error : null,
-            region: openaiRegion,
-            api: openaiProbe
-        };
-    } else if (openaiProbe && ["reachable", "auth"].indexOf(openaiProbe.state) !== -1) {
-        openai = {
-            state: "reachable",
-            label: "认证层正常",
-            detail: aiProbeDetail(openaiRegion, null, openaiProbe),
-            status: openaiProbe.status,
-            ms: openaiProbe.ms,
-            error: null,
-            region: openaiRegion,
-            api: openaiProbe
-        };
-    } else {
-        openai = {
-            state: "error",
-            label: "API 入口失败",
-            detail: aiProbeDetail(openaiRegion, null, openaiProbe),
-            status: openaiProbe ? openaiProbe.status : 0,
-            ms: openaiProbe ? openaiProbe.ms : null,
-            error: openaiProbe ? openaiProbe.error : "API unavailable",
-            region: openaiRegion,
-            api: openaiProbe
-        };
-    }
-    return {
-        chatgpt: combineAiService("chatgpt", probes.chatgpt && probes.chatgpt.web, probes.chatgpt && probes.chatgpt.api, countryCode),
-        openai: openai,
-        claude: combineAiService("claude", probes.claude && probes.claude.web, probes.claude && probes.claude.api, countryCode),
-        gemini: combineAiService("gemini", probes.gemini && probes.gemini.web, probes.gemini && probes.gemini.api, countryCode),
-        grok: combineAiService("grok", probes.grok && probes.grok.web, probes.grok && probes.grok.api, countryCode),
-        perplexity: combineAiService("perplexity", probes.perplexity && probes.perplexity.web, probes.perplexity && probes.perplexity.api, countryCode),
-        copilot: combineAiService("copilot", probes.copilot && probes.copilot.web, null, countryCode),
-        probes: probes,
-        googleSearch: (raw || {}).googleSearch || {},
-        regionPolicyVersion: AI_REGION_POLICY_VERSION,
-        githubAnonymousCoreRate: (raw || {}).githubAnonymousCoreRate || {}
     };
 }
 
@@ -879,7 +653,7 @@ function summarizeAiServices(services) {
     if (!items.length) return { code: "unknown", label: "未知", tone: "neutral", detail: "没有 AI 入口检测结果" };
 
     const reachable = items.filter(function (item) { return item.state === "reachable"; }).length;
-    const restricted = items.filter(function (item) { return item.state === "warning"; }).length;
+    const uncertain = items.filter(function (item) { return item.state === "warning"; }).length;
     const blocked = items.filter(function (item) { return item.state === "blocked"; }).length;
     const failed = items.filter(function (item) { return item.state === "error" || !item.status; }).length;
     const responded = items.length - failed;
@@ -889,49 +663,10 @@ function summarizeAiServices(services) {
 
     return {
         code: responded ? (reachable === items.length ? "reachable" : "mixed") : "unreachable",
-        label: responded ? reachable + "/" + items.length + " 地区/入口正常" : "入口均失败",
+        label: responded ? responded + "/" + items.length + " 入口有响应" : "入口均失败",
         tone: tone,
-        detail: reachable + " 正常 · " + restricted + " 挑战/分流异常 · " + blocked + " 地区受限 · " + failed + " 失败"
+        detail: reachable + " 到达认证层 · " + uncertain + " 网页响应/待实测 · " + blocked + " 地区受限 · " + failed + " 失败"
     };
-}
-
-function summarizeChinaRouting(exit, services) {
-    const families = exit.familyGeography || {};
-    const v4 = families.ipv4 || {};
-    const v6 = families.ipv6 || {};
-    const codes = [v4.countryCode, v6.countryCode].filter(Boolean);
-    const uniqueCodes = codes.filter(function (code, index) { return codes.indexOf(code) === index; });
-    const gemini = (services || {}).gemini || {};
-    const googleWeb = gemini.web || {};
-    const googleApi = gemini.api || {};
-    const googleSearch = (services || {}).googleSearch || {};
-    const googleChinaRedirect = [googleWeb.finalUrl, googleApi.finalUrl].some(function (url) {
-        return /(?:^|\.)google\.cn(?:\/|$)|googleapis\.cn(?:\/|$)/i.test(String(url || ""));
-    });
-    const familyDetail = "IPv4 " + (v4.countryCode || "未知") + " · IPv6 " + (v6.countryCode || "未知");
-
-    if (codes.indexOf("CN") !== -1 && uniqueCodes.length > 1) {
-        return { code: "confirmed", label: "明确双栈送中", tone: "danger", detail: familyDetail };
-    }
-    if (codes.length && codes.every(function (code) { return code === "CN"; })) {
-        return { code: "china-exit", label: "出口位于中国", tone: "danger", detail: familyDetail };
-    }
-    if (googleChinaRedirect) {
-        return { code: "google-cn", label: "Google 路径识别为中国", tone: "danger", detail: familyDetail + " · Google 跳转至 CN" };
-    }
-    if (googleSearch.isChina) {
-        return { code: "google-search-cn", label: "Google 搜索地区显示中国", tone: "danger", detail: familyDetail + " · " + (googleSearch.location || "中国") + " · " + (googleSearch.basis || "搜索页信号") };
-    }
-    if (googleWeb.state === "reachable" && googleApi.state === "error") {
-        return { code: "suspected", label: "疑似 Google 分流送中", tone: "warning", detail: familyDetail + " · Web 正常 / API 失败" };
-    }
-    if (uniqueCodes.length > 1) {
-        return { code: "dual-stack-mismatch", label: "双栈地区不一致", tone: "warning", detail: familyDetail + " · 未直接命中中国" };
-    }
-    if (!codes.length) {
-        return { code: "unknown", label: "无法判断", tone: "neutral", detail: "IPv4/IPv6 地区数据不足" };
-    }
-    return { code: "none", label: "未发现送中", tone: "success", detail: familyDetail + " · Google 后端搜索页未见 CN 信号" };
 }
 
 function summarizeStreaming(streaming) {
@@ -1020,7 +755,6 @@ function buildAssessment(exit, reputation, services, streaming) {
     }
 
     const aiServices = summarizeAiServices(services || {});
-    const chinaRouting = summarizeChinaRouting(exit, services || {});
     const streamingAccess = summarizeStreaming(streaming || {});
     const verdict = networkIdentity.label + "；" + signals.proxyExit.label + "；" + threatHistory.label + "；共享压力" + sharingPressure.label + "。";
     return {
@@ -1030,7 +764,6 @@ function buildAssessment(exit, reputation, services, streaming) {
         threatHistory: threatHistory,
         sharingPressure: sharingPressure,
         aiServices: aiServices,
-        chinaRouting: chinaRouting,
         streamingAccess: streamingAccess,
         verdict: verdict
     };
@@ -1065,12 +798,10 @@ async function runAudit(includePerformance) {
 
     const exit = await exitPromise;
     const reputationPromise = collectReputation(exit.observedIp || exit.ipv4);
-    const familyGeographyPromise = collectFamilyGeography(exit);
     const latency = latencyPromise ? await latencyPromise : null;
-    const auxiliaryResults = await Promise.all([reputationPromise, servicesPromise, streamingPromise, familyGeographyPromise]);
+    const auxiliaryResults = await Promise.all([reputationPromise, servicesPromise, streamingPromise]);
     const reputation = auxiliaryResults[0];
-    exit.familyGeography = auxiliaryResults[3];
-    const services = finalizeServices(auxiliaryResults[1], exit);
+    const services = auxiliaryResults[1];
     const streaming = auxiliaryResults[2];
     const bandwidth = includePerformance ? await collectBandwidth() : null;
     const assessment = buildAssessment(exit, reputation, services, streaming);
