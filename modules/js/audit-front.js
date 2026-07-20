@@ -822,6 +822,20 @@ const html = `
             color: #ff9ba7;
         }
 
+        .routing-manual {
+            margin-top: 13px;
+        }
+
+        .routing-manual-button {
+            width: 100%;
+        }
+
+        .routing-manual-button.active {
+            border-color: rgba(255, 118, 133, 0.44);
+            background: rgba(255, 118, 133, 0.12);
+            color: #ff9ba7;
+        }
+
         .warnings {
             display: none;
             margin-top: 14px;
@@ -967,7 +981,7 @@ const html = `
                     <article class="signal"><div class="signal-name">共享压力</div><div class="signal-value" id="signal-sharing">—</div><div class="signal-detail" id="signal-sharing-detail">—</div></article>
                     <article class="signal"><div class="signal-name">AI 服务结论</div><div class="signal-value" id="signal-ai">—</div><div class="signal-detail" id="signal-ai-detail">—</div></article>
                     <article class="signal"><div class="signal-name">流媒体解锁</div><div class="signal-value" id="signal-streaming">—</div><div class="signal-detail" id="signal-streaming-detail">—</div></article>
-                    <article class="signal"><div class="signal-name">送中检测</div><div class="signal-value" id="signal-china-routing">—</div><div class="signal-detail" id="signal-china-routing-detail">—</div></article>
+                    <article class="signal"><div class="signal-name">送中检测</div><div class="signal-value" id="signal-china-routing">—</div><div class="signal-detail" id="signal-china-routing-detail">—</div><div class="routing-manual"><button type="button" class="ai-manual-button routing-manual-button" id="china-routing-manual">Google 页脚显示中国</button></div></article>
                 </div>
             </section>
 
@@ -1207,7 +1221,8 @@ const html = `
                 renderSignal("signal-sharing", "signal-sharing-detail", assessment.sharingPressure);
                 renderSignal("signal-ai", "signal-ai-detail", aiAssessmentWithManual(data, assessment.aiServices));
                 renderSignal("signal-streaming", "signal-streaming-detail", assessment.streamingAccess);
-                renderSignal("signal-china-routing", "signal-china-routing-detail", assessment.chinaRouting);
+                renderSignal("signal-china-routing", "signal-china-routing-detail", chinaAssessmentWithManual(data, assessment.chinaRouting));
+                renderChinaManualButton(data);
                 text("hero-kicker", "AUDIT COMPLETE · " + ((assessment.proxyDetectability || {}).label || "信号已汇总"));
                 text("hero-title", "当前出口画像已生成");
                 text("hero-copy", assessment.verdict || "检测完成，详细结果见下方。 ");
@@ -1235,6 +1250,44 @@ const html = `
                     tone: unavailable.length ? "danger" : "success",
                     detail: "自动结论：" + ((automatic || {}).label || "未知") + "；再次点击已选按钮可清除本机记录"
                 };
+            }
+
+            function chinaManualKey(data) {
+                var exit = (data || {}).exit || {};
+                var identity = exit.observedIp || exit.ipv4 || exit.ipv6 || exit.countryCode || "unknown";
+                return "proxy-audit-google-china:" + hashText(identity);
+            }
+
+            function readChinaManual(data) {
+                try {
+                    return localStorage.getItem(chinaManualKey(data)) === "china";
+                } catch (_) {
+                    return false;
+                }
+            }
+
+            function toggleChinaManual(data) {
+                try {
+                    var key = chinaManualKey(data);
+                    if (readChinaManual(data)) localStorage.removeItem(key);
+                    else localStorage.setItem(key, "china");
+                } catch (_) {}
+            }
+
+            function chinaAssessmentWithManual(data, automatic) {
+                if (!readChinaManual(data)) return automatic;
+                return {
+                    label: "浏览器显示中国地区",
+                    tone: "danger",
+                    detail: "本机实测：Google 搜索页脚显示中国；自动结论：" + ((automatic || {}).label || "未知")
+                };
+            }
+
+            function renderChinaManualButton(data) {
+                var manualButton = byId("china-routing-manual");
+                var active = readChinaManual(data);
+                manualButton.classList.toggle("active", active);
+                manualButton.textContent = active ? "已记录：Google 页脚显示中国" : "Google 页脚显示中国";
             }
 
             function latencyTarget(latency, id) {
@@ -1527,6 +1580,12 @@ const html = `
                 writeAiManual(currentData, target.getAttribute("data-ai-key"), target.getAttribute("data-ai-value"));
                 renderAiServices(currentData);
                 renderSignal("signal-ai", "signal-ai-detail", aiAssessmentWithManual(currentData, (currentData.assessment || {}).aiServices));
+            });
+            byId("china-routing-manual").addEventListener("click", function () {
+                if (!currentData) return;
+                toggleChinaManual(currentData);
+                renderSignal("signal-china-routing", "signal-china-routing-detail", chinaAssessmentWithManual(currentData, (currentData.assessment || {}).chinaRouting));
+                renderChinaManualButton(currentData);
             });
             run();
         }());
