@@ -1,4 +1,4 @@
-const VERSION = "2.7.1";
+const VERSION = "2.8.0";
 const SETTINGS = {
     profile: "full",
     latencyRoundsPerTarget: 4,
@@ -450,21 +450,26 @@ async function collectGptHttpDetails() {
         "Accept-Language": "en-US,en;q=0.9"
     };
     const webSamples = [];
+    const websocketSamples = [];
     const apiSamples = [];
 
     for (let roundIndex = 0; roundIndex < 4; roundIndex += 1) {
         const results = await Promise.all([
             fetchUrl("https://chatgpt.com/?audit_round=" + (roundIndex + 1) + "&r=" + Date.now(), { timeout: 20, headers: browserHeaders }),
+            fetchUrl("https://ws.chatgpt.com/?audit_round=" + (roundIndex + 1) + "&r=" + Date.now(), { timeout: 15, headers: browserHeaders }),
             fetchUrl("https://api.openai.com/v1/models", { timeout: 15 })
         ]);
         const web = results[0];
-        const api = results[1];
+        const websocket = results[1];
+        const api = results[2];
         webSamples.push({ run: roundIndex + 1, ok: web.status > 0, ms: web.ms, status: web.status, error: web.error });
+        websocketSamples.push({ run: roundIndex + 1, ok: websocket.status > 0, ms: websocket.ms, status: websocket.status, error: websocket.error });
         apiSamples.push({ run: roundIndex + 1, ok: api.status > 0, ms: api.ms, status: api.status, error: api.error });
     }
 
     return {
         web: summarizeTimingTarget("web", "ChatGPT Web", webSamples, 4),
+        websocket: summarizeTimingTarget("websocket", "ChatGPT WS 域名 HTTPS 链路", websocketSamples, 4),
         api: summarizeTimingTarget("api", "OpenAI API（参考）", apiSamples, 4)
     };
 }
