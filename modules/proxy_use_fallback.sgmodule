@@ -1,5 +1,5 @@
-#!name=PROXY使用未送中fallback
-#!desc=PROXY默认使用未送中fallback，同时保留其他节点分组
+#!name=代理使用未送中fallback
+#!desc=让代理分组使用未送中fallback
 
 [Proxy Group]
-PROXY = select,未送中fallback,AI手动,除香港手动,select=0
+代理 = select,未送中fallback,select=0
