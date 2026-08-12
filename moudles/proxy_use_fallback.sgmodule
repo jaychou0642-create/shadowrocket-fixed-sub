@@ -1,5 +1,0 @@
-#!name=PROXY使用未送中回退
-#!desc=PROXY默认使用未送中回退，同时保留其他节点分组
-
-[Proxy Group]
-PROXY = select,未送中回退,AI手动,除香港手动,select=0
