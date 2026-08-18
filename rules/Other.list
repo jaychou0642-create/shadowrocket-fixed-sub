@@ -10,3 +10,4 @@ DOMAIN,api-updates.orbstack.dev
 DOMAIN,cdn-updates.orbstack.dev
 DOMAIN,api.segment.io
 DOMAIN,r.msftstatic.com
+DOMAIN-SUFFIX,deepseek.com
