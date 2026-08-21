@@ -1,0 +1,538 @@
+mode: rule
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+dns:
+  enable: true
+  ipv6: false
+  cache-algorithm: arc
+  prefer-h3: false
+  use-hosts: true
+  use-system-hosts: true
+  respect-rules: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+  - '*.lan'
+  - '*.local'
+  - '*.internal'
+  - localhost
+  - captive.apple.com
+  - e.crashlytics.com
+  - sequoia.apple.com
+  - seed-sequoia.siri.apple.com
+  - '*.ls.apple.com'
+  - '*.apple.com'
+  - '*.icloud.com'
+  - '*.icloud.com.cn'
+  - '*.icloud-content.com'
+  - '*.apple-cloudkit.com'
+  - '*.apzones.com'
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - https://doh.pub/dns-query
+  - https://dns.alidns.com/dns-query
+  - 223.5.5.5
+  - 119.29.29.29
+  proxy-server-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  direct-nameserver:
+  - system
+  direct-nameserver-follow-policy: false
+  nameserver-policy:
+    +.apple.com: system
+    +.icloud.com: system
+    +.icloud.com.cn: system
+    +.icloud-content.com: system
+    +.apple-cloudkit.com: system
+    +.apzones.com: system
+profile:
+  store-selected: true
+  store-fake-ip: true
+proxy-groups:
+- name: 代理
+  type: select
+  proxies:
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+  include-all-proxies: true
+  exclude-filter: (?i)(剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+- name: 未送中fallback
+  type: fallback
+  include-all-proxies: true
+  filter: (新加坡专线04\|BGP\|流媒体|日本专线01\|BGP\|流媒体|日本专线02\|BGP\|流媒体|韩国专线01\|BGP\|流媒体|台湾专线01\|BGP\|流媒体|韩国高速01\|BGP\|流媒体|台湾高速01\|BGP\|流媒体|日本高速01\|CTCU\|0\.5x|新加坡专线03\|BGP\|流媒体)
+  url: https://www.gstatic.com/generate_204
+  interval: 600
+  lazy: true
+  timeout: 5000
+  max-failed-times: 2
+  expected-status: 204
+- name: AI手动
+  type: select
+  proxies:
+  - 未送中fallback
+  include-all-proxies: true
+  exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+- name: 除香港手动
+  type: select
+  proxies:
+  - 未送中fallback
+  include-all-proxies: true
+  exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+- name: AI
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: TikTok
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: YouTube
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: Netflix
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: Disney+
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: Max
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: Spotify
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - DIRECT
+  - AI手动
+  - 除香港手动
+- name: Telegram
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: Twitter
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: Facebook
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: PayPal
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - DIRECT
+  - AI手动
+  - 除香港手动
+- name: Amazon
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - DIRECT
+  - AI手动
+  - 除香港手动
+- name: 谷歌服务
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: 微软服务
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - DIRECT
+  - AI手动
+  - 除香港手动
+- name: 游戏平台
+  type: select
+  proxies:
+  - 代理
+  - 未送中fallback
+  - DIRECT
+  - AI手动
+  - 除香港手动
+- name: 苹果服务
+  type: select
+  proxies:
+  - DIRECT
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: 苹果推送
+  type: select
+  proxies:
+  - DIRECT
+  - 代理
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+- name: 哔哩哔哩
+  type: select
+  proxies:
+  - DIRECT
+  - 代理
+  - 未送中fallback
+rule-providers:
+  Lan:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Lan/Lan.list
+  TikTok:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/TikTok/TikTok.list
+  YouTube:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/YouTube/YouTube.list
+  Netflix:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Netflix/Netflix.list
+  Disney:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Disney/Disney.list
+  HBO:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/HBO/HBO.list
+  Spotify:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Spotify/Spotify.list
+  Telegram:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Telegram/Telegram.list
+  PayPal:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/PayPal/PayPal.list
+  Twitter:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Twitter/Twitter.list
+  Facebook:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Facebook/Facebook.list
+  Amazon:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Amazon/Amazon.list
+  GitHub:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/GitHub/GitHub.list
+  Microsoft:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Microsoft/Microsoft.list
+  Google:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Google/Google.list
+  Apple:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Apple/Apple.list
+  AppleID:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/AppleID/AppleID.list
+  iCloud:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/iCloud/iCloud.list
+  AppStore:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/AppStore/AppStore.list
+  TestFlight:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/TestFlight/TestFlight.list
+  Sony:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Sony/Sony.list
+  Nintendo:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Nintendo/Nintendo.list
+  Epic:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Epic/Epic.list
+  SteamCN:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/SteamCN/SteamCN.list
+  Steam:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Steam/Steam.list
+  Game:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Game/Game.list
+  BiliBili:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/BiliBili/BiliBili.list
+  NetEaseMusic:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/NetEaseMusic/NetEaseMusic.list
+  Baidu:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Baidu/Baidu.list
+  DouBan:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/DouBan/DouBan.list
+  WeChat:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/WeChat/WeChat.list
+  Sina:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Sina/Sina.list
+  Zhihu:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Zhihu/Zhihu.list
+  XiaoHongShu:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/XiaoHongShu/XiaoHongShu.list
+  DouYin:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/DouYin/DouYin.list
+  Global:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Global/Global.list
+  China:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/China/China.list
+  AI:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rule/AI.txt
+  AppleProxy:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/AppleProxy.list
+  AppleCustom:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/AppleCustom.list
+  Other:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/Other.list
+rules:
+- DOMAIN,localhost,DIRECT
+- DOMAIN-SUFFIX,local,DIRECT
+- DOMAIN-SUFFIX,lan,DIRECT
+- DOMAIN-SUFFIX,internal,DIRECT
+- DOMAIN,captive.apple.com,DIRECT
+- DOMAIN,e.crashlytics.com,DIRECT
+- DOMAIN,sequoia.apple.com,DIRECT
+- DOMAIN,seed-sequoia.siri.apple.com,DIRECT
+- DOMAIN-SUFFIX,ls.apple.com,DIRECT
+- RULE-SET,Lan,DIRECT
+- DOMAIN-SUFFIX,ccb.com,DIRECT
+- DOMAIN-SUFFIX,abchina.com.cn,DIRECT
+- DOMAIN-SUFFIX,psbc.com,DIRECT
+- DOMAIN-SUFFIX,unionpay.com,DIRECT
+- DOMAIN-SUFFIX,95516.com,DIRECT
+- DOMAIN-SUFFIX,95533.com,DIRECT
+- DOMAIN-SUFFIX,95599.cn,DIRECT
+- RULE-SET,AI,AI
+- RULE-SET,TikTok,TikTok
+- RULE-SET,YouTube,YouTube
+- RULE-SET,Netflix,Netflix
+- RULE-SET,Disney,Disney+
+- DOMAIN-SUFFIX,litix.io,Max
+- DOMAIN-SUFFIX,discomax.com,Max
+- DOMAIN-SUFFIX,brightline.tv,Max
+- RULE-SET,HBO,Max
+- RULE-SET,Spotify,Spotify
+- RULE-SET,Telegram,Telegram
+- RULE-SET,PayPal,PayPal
+- RULE-SET,Twitter,Twitter
+- RULE-SET,Facebook,Facebook
+- RULE-SET,Amazon,Amazon
+- RULE-SET,GitHub,代理
+- RULE-SET,Microsoft,微软服务
+- RULE-SET,Google,谷歌服务
+- DOMAIN,c.apple.news,代理
+- DOMAIN,vod-ap-aoc.tv.apple.com,代理
+- RULE-SET,AppleProxy,苹果推送
+- RULE-SET,Apple,苹果服务
+- RULE-SET,AppleID,苹果服务
+- RULE-SET,iCloud,苹果服务
+- RULE-SET,AppStore,苹果服务
+- RULE-SET,TestFlight,苹果服务
+- RULE-SET,AppleCustom,苹果服务
+- RULE-SET,Sony,游戏平台
+- RULE-SET,Nintendo,游戏平台
+- RULE-SET,Epic,游戏平台
+- RULE-SET,SteamCN,游戏平台
+- RULE-SET,Steam,游戏平台
+- RULE-SET,Game,游戏平台
+- RULE-SET,BiliBili,哔哩哔哩
+- RULE-SET,NetEaseMusic,DIRECT
+- RULE-SET,Baidu,DIRECT
+- RULE-SET,DouBan,DIRECT
+- RULE-SET,WeChat,DIRECT
+- RULE-SET,Sina,DIRECT
+- RULE-SET,Zhihu,DIRECT
+- RULE-SET,XiaoHongShu,DIRECT
+- RULE-SET,DouYin,DIRECT
+- DOMAIN-SUFFIX,163.com,DIRECT
+- RULE-SET,Other,DIRECT
+- DOMAIN-SUFFIX,dnsleaktest.com,代理
+- DOMAIN-SUFFIX,ipleak.net,代理
+- DOMAIN-SUFFIX,browserleaks.com,代理
+- DOMAIN-SUFFIX,browserleaks.org,代理
+- DOMAIN-SUFFIX,browserleaks.net,代理
+- DOMAIN-SUFFIX,vpnunlimited.com,代理
+- DOMAIN-SUFFIX,whrq.net,代理
+- RULE-SET,Global,代理
+- RULE-SET,China,DIRECT
+- GEOIP,CN,DIRECT
+- MATCH,代理
