@@ -1,10 +1,10 @@
 mode: rule
-ipv6: false
+ipv6: true
 unified-delay: true
 tcp-concurrent: true
 dns:
   enable: true
-  ipv6: false
+  ipv6: true
   cache-algorithm: arc
   prefer-h3: false
   use-hosts: true
