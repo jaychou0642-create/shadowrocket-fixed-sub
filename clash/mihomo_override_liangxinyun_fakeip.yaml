@@ -35,11 +35,9 @@ dns:
   nameserver:
   - https://doh.pub/dns-query
   - https://dns.alidns.com/dns-query
-  - 223.5.5.5
-  - 119.29.29.29
   proxy-server-nameserver:
-  - 223.5.5.5
-  - 119.29.29.29
+  - https://doh.pub/dns-query
+  - https://dns.alidns.com/dns-query
   direct-nameserver:
   - system
   direct-nameserver-follow-policy: false
@@ -74,6 +72,7 @@ proxy-groups:
   expected-status: 204
 - name: AI手动
   type: select
+  default-selected: 新加坡SG-HY2
   proxies:
   - 未送中fallback
   include-all-proxies: true
@@ -180,6 +179,7 @@ proxy-groups:
   - 除香港手动
 - name: 微软服务
   type: select
+  default-selected: DIRECT
   proxies:
   - 代理
   - 未送中fallback
