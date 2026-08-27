@@ -62,12 +62,18 @@ proxy-groups:
   use:
     - 良心云
   exclude-filter: (?i)(剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+  url: https://www.gstatic.com/generate_204
+  interval: 3600
+  lazy: true
 - name: 所有节点
   type: select
   include-all-proxies: true
   use:
     - 良心云
   exclude-filter: (?i)(剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+  url: https://www.gstatic.com/generate_204
+  interval: 3600
+  lazy: true
 - name: 未送中fallback
   type: fallback
   include-all-proxies: true
@@ -87,12 +93,18 @@ proxy-groups:
   use:
     - 良心云
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+  url: https://www.gstatic.com/generate_204
+  interval: 3600
+  lazy: true
 - name: 除香港手动
   type: select
   include-all-proxies: true
   use:
     - 良心云
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+  url: https://www.gstatic.com/generate_204
+  interval: 3600
+  lazy: true
 - name: AI
   type: select
   default-selected: 代理
@@ -280,7 +292,7 @@ proxy-providers:
     interval: 86400
     path: ./providers/chuixueyun.yaml
     health-check:
-      enable: true
+      enable: false
       lazy: true
       interval: 3600
       url: https://www.gstatic.com/generate_204
@@ -290,7 +302,7 @@ proxy-providers:
     interval: 86400
     path: ./providers/liangxinyun.yaml
     health-check:
-      enable: true
+      enable: false
       lazy: true
       interval: 3600
       url: https://www.gstatic.com/generate_204
