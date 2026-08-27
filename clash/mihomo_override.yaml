@@ -465,12 +465,12 @@ rule-providers:
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/XiaoHongShu/XiaoHongShu.list
-  DouYin:
+  ByteDance:
     type: http
     behavior: classical
     format: text
     interval: 86400
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/DouYin/DouYin.list
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/ByteDance/ByteDance.list
   Global:
     type: http
     behavior: classical
@@ -566,7 +566,7 @@ rules:
 - RULE-SET,Sina,DIRECT
 - RULE-SET,Zhihu,DIRECT
 - RULE-SET,XiaoHongShu,DIRECT
-- RULE-SET,DouYin,DIRECT
+- RULE-SET,ByteDance,DIRECT
 - DOMAIN-SUFFIX,163.com,DIRECT
 - RULE-SET,Other,DIRECT
 - DOMAIN-SUFFIX,dnsleaktest.com,代理
