@@ -83,7 +83,6 @@ proxy-groups:
   expected-status: 204
 - name: AI手动
   type: select
-  default-selected: 新加坡SG-HY2
   use:
     - 吹雪云
     - 良心云
