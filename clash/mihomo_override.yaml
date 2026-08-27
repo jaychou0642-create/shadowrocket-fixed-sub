@@ -96,6 +96,7 @@ proxy-groups:
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
 - name: AI
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -105,6 +106,7 @@ proxy-groups:
   - DIRECT
 - name: TikTok
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -114,6 +116,7 @@ proxy-groups:
   - DIRECT
 - name: YouTube
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -123,6 +126,7 @@ proxy-groups:
   - DIRECT
 - name: Netflix
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -132,6 +136,7 @@ proxy-groups:
   - DIRECT
 - name: Disney+
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -141,6 +146,7 @@ proxy-groups:
   - DIRECT
 - name: Max
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -150,6 +156,7 @@ proxy-groups:
   - DIRECT
 - name: Spotify
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -159,6 +166,7 @@ proxy-groups:
   - DIRECT
 - name: Telegram
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -168,6 +176,7 @@ proxy-groups:
   - DIRECT
 - name: Twitter
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -177,6 +186,7 @@ proxy-groups:
   - DIRECT
 - name: Facebook
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -186,6 +196,7 @@ proxy-groups:
   - DIRECT
 - name: PayPal
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -195,6 +206,7 @@ proxy-groups:
   - DIRECT
 - name: Amazon
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -204,6 +216,7 @@ proxy-groups:
   - DIRECT
 - name: 谷歌服务
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
@@ -223,6 +236,7 @@ proxy-groups:
   - DIRECT
 - name: 游戏平台
   type: select
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点
