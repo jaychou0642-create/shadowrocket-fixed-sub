@@ -273,6 +273,27 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - DIRECT
+proxy-providers:
+  吹雪云:
+    type: http
+    url: "https://xn--9kqs1lo79d.cc/api/v1/chuixue?token=20250cb6485f8a646e4851f9f067351e"
+    interval: 86400
+    path: ./providers/chuixueyun.yaml
+    health-check:
+      enable: true
+      lazy: true
+      interval: 3600
+      url: https://www.gstatic.com/generate_204
+  良心云:
+    type: http
+    url: "https://liangxin.xyz/api/v1/liangxin?OwO=8fbc45657dc6c050bd70175aa1ac21cb"
+    interval: 86400
+    path: ./providers/liangxinyun.yaml
+    health-check:
+      enable: true
+      lazy: true
+      interval: 3600
+      url: https://www.gstatic.com/generate_204
 rule-providers:
   Lan:
     type: http
