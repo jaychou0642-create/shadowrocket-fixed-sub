@@ -232,6 +232,7 @@ proxy-groups:
   - DIRECT
 - name: 苹果服务
   type: select
+  default-selected: DIRECT
   proxies:
   - 代理
   - 所有节点
@@ -241,6 +242,7 @@ proxy-groups:
   - DIRECT
 - name: 苹果推送
   type: select
+  default-selected: DIRECT
   proxies:
   - 代理
   - 所有节点
@@ -250,6 +252,7 @@ proxy-groups:
   - DIRECT
 - name: 哔哩哔哩
   type: select
+  default-selected: DIRECT
   proxies:
   - 代理
   - 所有节点
