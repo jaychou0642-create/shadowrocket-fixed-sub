@@ -60,6 +60,9 @@ proxy-groups:
   - 除香港手动
   include-all-proxies: true
   exclude-filter: (?i)(剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+- name: 所有节点
+  type: select
+  include-all-proxies: true
 - name: 未送中fallback
   type: fallback
   include-all-proxies: true
@@ -87,135 +90,165 @@ proxy-groups:
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: TikTok
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: YouTube
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Netflix
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Disney+
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Max
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Spotify
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
-  - DIRECT
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Telegram
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Twitter
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Facebook
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: PayPal
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
-  - DIRECT
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: Amazon
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
-  - DIRECT
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: 谷歌服务
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: 微软服务
   type: select
   default-selected: DIRECT
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
-  - DIRECT
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: 游戏平台
   type: select
   proxies:
   - 代理
+  - 所有节点
   - 未送中fallback
-  - DIRECT
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: 苹果服务
   type: select
   proxies:
-  - DIRECT
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: 苹果推送
   type: select
   proxies:
-  - DIRECT
   - 代理
+  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - DIRECT
 - name: 哔哩哔哩
   type: select
   proxies:
-  - DIRECT
   - 代理
+  - 所有节点
   - 未送中fallback
+  - AI手动
+  - 除香港手动
+  - DIRECT
 rule-providers:
   Lan:
     type: http
