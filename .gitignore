@@ -1,0 +1,7 @@
+.DS_Store
+.idea/
+
+# Keep local provider credentials and generated provider data out of Git.
+*.local.yaml
+*.local.yml
+clash/providers/
