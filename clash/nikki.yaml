@@ -71,7 +71,6 @@ proxy-groups:
   type: select
   use:
     - 吹雪月订阅
-    - 吹雪云
     - 良心云
     - 牛逼
     - 魔戒
