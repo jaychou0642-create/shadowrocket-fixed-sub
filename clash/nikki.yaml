@@ -11,7 +11,7 @@ dns:
   prefer-h3: false
   use-hosts: true
   use-system-hosts: true
-  respect-rules: false
+  respect-rules: true
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
@@ -35,14 +35,14 @@ dns:
   - 223.5.5.5
   - 119.29.29.29
   nameserver:
-  - https://doh.pub/dns-query
-  - https://dns.alidns.com/dns-query
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
   proxy-server-nameserver:
   - https://doh.pub/dns-query
   - https://dns.alidns.com/dns-query
   direct-nameserver:
   - system
-  direct-nameserver-follow-policy: false
+  direct-nameserver-follow-policy: true
   nameserver-policy:
     +.apple.com: system
     +.icloud.com: system
