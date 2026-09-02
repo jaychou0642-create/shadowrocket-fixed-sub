@@ -130,6 +130,16 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - DIRECT
+- name: Telegram
+  type: select
+  default-selected: 代理
+  proxies:
+  - 代理
+  - 所有节点
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+  - DIRECT
 - name: YouTube
   type: select
   default-selected: 代理
@@ -171,16 +181,6 @@ proxy-groups:
   - 除香港手动
   - DIRECT
 - name: Spotify
-  type: select
-  default-selected: 代理
-  proxies:
-  - 代理
-  - 所有节点
-  - 未送中fallback
-  - AI手动
-  - 除香港手动
-  - DIRECT
-- name: Telegram
   type: select
   default-selected: 代理
   proxies:
