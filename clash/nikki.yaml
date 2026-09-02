@@ -64,6 +64,7 @@ proxy-groups:
   use:
     - 吹雪月订阅
     - 良心云
+  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
   interval: 3600
   lazy: true
