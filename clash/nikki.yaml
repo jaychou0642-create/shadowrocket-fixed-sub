@@ -35,8 +35,8 @@ dns:
   - 223.5.5.5
   - 119.29.29.29
   nameserver:
-  - https://1.1.1.1/dns-query#代理
-  - https://8.8.8.8/dns-query#代理
+  - https://1.1.1.1/dns-query#代理&disable-ipv6=true
+  - https://8.8.8.8/dns-query#代理&disable-ipv6=true
   proxy-server-nameserver:
   - https://doh.pub/dns-query
   - https://dns.alidns.com/dns-query
