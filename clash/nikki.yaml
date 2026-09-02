@@ -549,13 +549,6 @@ rule-providers:
     interval: 86400
     url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/Other.list
 rules:
-- DOMAIN-SUFFIX,dnsleaktest.com,代理
-- DOMAIN-SUFFIX,ipleak.net,代理
-- DOMAIN-SUFFIX,browserleaks.com,代理
-- DOMAIN-SUFFIX,browserleaks.org,代理
-- DOMAIN-SUFFIX,browserleaks.net,代理
-- DOMAIN-SUFFIX,vpnunlimited.com,代理
-- DOMAIN-SUFFIX,whrq.net,代理
 - DOMAIN,localhost,DIRECT
 - DOMAIN-SUFFIX,local,DIRECT
 - DOMAIN-SUFFIX,lan,DIRECT
@@ -617,6 +610,13 @@ rules:
 - RULE-SET,ByteDance,字节跳动
 - DOMAIN-SUFFIX,163.com,DIRECT
 - RULE-SET,Other,DIRECT
+- DOMAIN-SUFFIX,dnsleaktest.com,代理
+- DOMAIN-SUFFIX,ipleak.net,代理
+- DOMAIN-SUFFIX,browserleaks.com,代理
+- DOMAIN-SUFFIX,browserleaks.org,代理
+- DOMAIN-SUFFIX,browserleaks.net,代理
+- DOMAIN-SUFFIX,vpnunlimited.com,代理
+- DOMAIN-SUFFIX,whrq.net,代理
 - RULE-SET,Global,代理
 - RULE-SET,China,DIRECT
 - GEOIP,CN,DIRECT
