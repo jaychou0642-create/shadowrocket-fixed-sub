@@ -287,6 +287,16 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - DIRECT
+- name: 字节跳动
+  type: select
+  default-selected: DIRECT
+  proxies:
+  - 代理
+  - 所有节点
+  - 未送中fallback
+  - AI手动
+  - 除香港手动
+  - DIRECT
 rule-providers:
   Lan:
     type: http
@@ -593,7 +603,7 @@ rules:
 - RULE-SET,Sina,DIRECT
 - RULE-SET,Zhihu,DIRECT
 - RULE-SET,XiaoHongShu,DIRECT
-- RULE-SET,ByteDance,DIRECT
+- RULE-SET,ByteDance,字节跳动
 - DOMAIN-SUFFIX,163.com,DIRECT
 - RULE-SET,Other,DIRECT
 - DOMAIN-SUFFIX,dnsleaktest.com,代理
