@@ -2,6 +2,7 @@ mode: rule
 ipv6: true
 unified-delay: true
 tcp-concurrent: true
+proxies: []
 dns:
   enable: true
   listen: '[::]:1053'
