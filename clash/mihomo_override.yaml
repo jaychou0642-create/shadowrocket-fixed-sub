@@ -4,8 +4,9 @@ unified-delay: true
 tcp-concurrent: true
 dns:
   enable: true
+  listen: '[::]:1053'
   ipv6: true
-  cache-algorithm: arc
+  cache-algorithm: lru
   prefer-h3: false
   use-hosts: true
   use-system-hosts: true
