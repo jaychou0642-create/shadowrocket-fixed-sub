@@ -63,6 +63,11 @@ jobs:
             else
               sed -i '/^\[General\]/a private-ip-answer = true' "$file"
             fi
+
+            # Game.list already contains the Nintendo and Epic rules.
+            # Remove the redundant standalone rule sets after each upstream refresh.
+            sed -i '/\/rule\/Shadowrocket\/Nintendo\/Nintendo\.list,/d' "$file"
+            sed -i '/\/rule\/Shadowrocket\/Epic\/Epic\.list,/d' "$file"
           }
 
           for name in "${CONFIGS[@]}"; do

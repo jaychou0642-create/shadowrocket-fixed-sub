@@ -420,18 +420,6 @@ rule-providers:
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Sony/Sony.list
-  Nintendo:
-    type: http
-    behavior: classical
-    format: text
-    interval: 86400
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Nintendo/Nintendo.list
-  Epic:
-    type: http
-    behavior: classical
-    format: text
-    interval: 86400
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Epic/Epic.list
   SteamCN:
     type: http
     behavior: classical
@@ -586,8 +574,6 @@ rules:
 - RULE-SET,TestFlight,苹果服务
 - RULE-SET,AppleCustom,苹果服务
 - RULE-SET,Sony,游戏平台
-- RULE-SET,Nintendo,游戏平台
-- RULE-SET,Epic,游戏平台
 - RULE-SET,SteamCN,游戏平台
 - RULE-SET,Steam,游戏平台
 - RULE-SET,Game,游戏平台

@@ -1,9 +1,9 @@
 # NAME: AppleServicesCustom
 # AUTHOR: jaychou0642-create
 # REPO: https://github.com/jaychou0642-create/shadowrocket-fixed-sub
-# UPDATED: 2026-06-14T13:00:00+08:00
-# DOMAIN: 18
-# DOMAIN-SUFFIX: 4
+# UPDATED: 2026-09-04T12:36:11+08:00
+# DOMAIN: 19
+# DOMAIN-SUFFIX: 3
 # TOTAL: 22
 DOMAIN,account.apple.com
 DOMAIN,amp-account.apps.apple.com
@@ -24,7 +24,6 @@ DOMAIN,afs.ampaeservices.com
 DOMAIN,lcdn-locator.apple.com
 DOMAIN,securemetrics.apple.com
 DOMAIN,aidc.apple.com
-DOMAIN-SUFFIX,push.apple.com
 DOMAIN,wps.apple.com
 DOMAIN-SUFFIX,weather.apple.com
 DOMAIN,weather-edge.apple.com
