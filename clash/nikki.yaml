@@ -528,6 +528,13 @@ rules:
 - DOMAIN-SUFFIX,95516.com,DIRECT
 - DOMAIN-SUFFIX,95533.com,DIRECT
 - DOMAIN-SUFFIX,95599.cn,DIRECT
+- DOMAIN-SUFFIX,dnsleaktest.com,代理
+- DOMAIN-SUFFIX,ipleak.net,代理
+- DOMAIN-SUFFIX,browserleaks.com,代理
+- DOMAIN-SUFFIX,browserleaks.org,代理
+- DOMAIN-SUFFIX,browserleaks.net,代理
+- DOMAIN-SUFFIX,vpnunlimited.com,代理
+- DOMAIN-SUFFIX,whrq.net,代理
 - RULE-SET,AI,AI
 - RULE-SET,TikTok,TikTok
 - RULE-SET,YouTube,YouTube
@@ -544,6 +551,8 @@ rules:
 - RULE-SET,Facebook,Facebook
 - RULE-SET,Amazon,Amazon
 - RULE-SET,GitHub,代理
+- RULE-SET,Sony,游戏平台
+- RULE-SET,Game,游戏平台
 - RULE-SET,Microsoft,微软服务
 - RULE-SET,Google,谷歌服务
 - DOMAIN,c.apple.news,代理
@@ -555,8 +564,6 @@ rules:
 - RULE-SET,AppStore,苹果服务
 - RULE-SET,TestFlight,苹果服务
 - RULE-SET,AppleCustom,苹果服务
-- RULE-SET,Sony,游戏平台
-- RULE-SET,Game,游戏平台
 - RULE-SET,BiliBili,哔哩哔哩
 - RULE-SET,NetEaseMusic,DIRECT
 - RULE-SET,Baidu,DIRECT
@@ -568,13 +575,6 @@ rules:
 - RULE-SET,ByteDance,字节跳动
 - DOMAIN-SUFFIX,163.com,DIRECT
 - RULE-SET,Other,DIRECT
-- DOMAIN-SUFFIX,dnsleaktest.com,代理
-- DOMAIN-SUFFIX,ipleak.net,代理
-- DOMAIN-SUFFIX,browserleaks.com,代理
-- DOMAIN-SUFFIX,browserleaks.org,代理
-- DOMAIN-SUFFIX,browserleaks.net,代理
-- DOMAIN-SUFFIX,vpnunlimited.com,代理
-- DOMAIN-SUFFIX,whrq.net,代理
 - RULE-SET,China,DIRECT
 - GEOIP,CN,DIRECT
 - MATCH,代理
