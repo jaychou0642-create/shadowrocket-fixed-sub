@@ -420,18 +420,6 @@ rule-providers:
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Sony/Sony.list
-  SteamCN:
-    type: http
-    behavior: classical
-    format: text
-    interval: 86400
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/SteamCN/SteamCN.list
-  Steam:
-    type: http
-    behavior: classical
-    format: text
-    interval: 86400
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Steam/Steam.list
   Game:
     type: http
     behavior: classical
@@ -568,8 +556,6 @@ rules:
 - RULE-SET,TestFlight,苹果服务
 - RULE-SET,AppleCustom,苹果服务
 - RULE-SET,Sony,游戏平台
-- RULE-SET,SteamCN,游戏平台
-- RULE-SET,Steam,游戏平台
 - RULE-SET,Game,游戏平台
 - RULE-SET,BiliBili,哔哩哔哩
 - RULE-SET,NetEaseMusic,DIRECT
