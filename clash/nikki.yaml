@@ -123,7 +123,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: TikTok
   type: select
@@ -134,7 +133,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Telegram
   type: select
@@ -145,7 +143,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: YouTube
   type: select
@@ -156,7 +153,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Netflix
   type: select
@@ -167,7 +163,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Disney+
   type: select
@@ -178,7 +173,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Max
   type: select
@@ -189,7 +183,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Spotify
   type: select
@@ -200,7 +193,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Twitter
   type: select
@@ -211,7 +203,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Facebook
   type: select
@@ -222,7 +213,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: PayPal
   type: select
@@ -233,7 +223,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: Amazon
   type: select
@@ -244,7 +233,6 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: 谷歌服务
   type: select
@@ -255,18 +243,16 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: 微软服务
   type: select
-  default-selected: DIRECT
+  default-selected: 直连-IPv6优先
   proxies:
   - 代理
   - 未送中fallback
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: 游戏平台
   type: select
@@ -277,51 +263,46 @@ proxy-groups:
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: 苹果服务
   type: select
-  default-selected: DIRECT
+  default-selected: 直连-IPv6优先
   proxies:
   - 代理
   - 未送中fallback
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: 苹果推送
   type: select
-  default-selected: DIRECT
+  default-selected: 直连-IPv6优先
   proxies:
   - 代理
   - 未送中fallback
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: 哔哩哔哩
   type: select
-  default-selected: DIRECT
+  default-selected: 直连-IPv6优先
   proxies:
   - 代理
   - 未送中fallback
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 - name: 字节跳动
   type: select
-  default-selected: DIRECT
+  default-selected: 直连-IPv6优先
   proxies:
   - 代理
   - 未送中fallback
   - AI手动
   - 除香港手动
   - 香港手动
-  - DIRECT
   - 直连-IPv6优先
 rule-providers:
   Lan:
@@ -541,23 +522,23 @@ rule-providers:
     interval: 86400
     url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/Other.list
 rules:
-- DOMAIN,localhost,DIRECT
-- DOMAIN-SUFFIX,local,DIRECT
-- DOMAIN-SUFFIX,lan,DIRECT
-- DOMAIN-SUFFIX,internal,DIRECT
-- DOMAIN,captive.apple.com,DIRECT
-- DOMAIN,e.crashlytics.com,DIRECT
-- DOMAIN,sequoia.apple.com,DIRECT
-- DOMAIN,seed-sequoia.siri.apple.com,DIRECT
-- DOMAIN-SUFFIX,ls.apple.com,DIRECT
-- RULE-SET,Lan,DIRECT
-- DOMAIN-SUFFIX,ccb.com,DIRECT
-- DOMAIN-SUFFIX,abchina.com.cn,DIRECT
-- DOMAIN-SUFFIX,psbc.com,DIRECT
-- DOMAIN-SUFFIX,unionpay.com,DIRECT
-- DOMAIN-SUFFIX,95516.com,DIRECT
-- DOMAIN-SUFFIX,95533.com,DIRECT
-- DOMAIN-SUFFIX,95599.cn,DIRECT
+- DOMAIN,localhost,直连-IPv6优先
+- DOMAIN-SUFFIX,local,直连-IPv6优先
+- DOMAIN-SUFFIX,lan,直连-IPv6优先
+- DOMAIN-SUFFIX,internal,直连-IPv6优先
+- DOMAIN,captive.apple.com,直连-IPv6优先
+- DOMAIN,e.crashlytics.com,直连-IPv6优先
+- DOMAIN,sequoia.apple.com,直连-IPv6优先
+- DOMAIN,seed-sequoia.siri.apple.com,直连-IPv6优先
+- DOMAIN-SUFFIX,ls.apple.com,直连-IPv6优先
+- RULE-SET,Lan,直连-IPv6优先
+- DOMAIN-SUFFIX,ccb.com,直连-IPv6优先
+- DOMAIN-SUFFIX,abchina.com.cn,直连-IPv6优先
+- DOMAIN-SUFFIX,psbc.com,直连-IPv6优先
+- DOMAIN-SUFFIX,unionpay.com,直连-IPv6优先
+- DOMAIN-SUFFIX,95516.com,直连-IPv6优先
+- DOMAIN-SUFFIX,95533.com,直连-IPv6优先
+- DOMAIN-SUFFIX,95599.cn,直连-IPv6优先
 - DOMAIN-SUFFIX,dnsleaktest.com,代理
 - DOMAIN-SUFFIX,ipleak.net,代理
 - DOMAIN-SUFFIX,browserleaks.com,代理
@@ -595,16 +576,16 @@ rules:
 - RULE-SET,TestFlight,苹果服务
 - RULE-SET,AppleCustom,苹果服务
 - RULE-SET,BiliBili,哔哩哔哩
-- RULE-SET,NetEaseMusic,DIRECT
-- RULE-SET,Baidu,DIRECT
-- RULE-SET,DouBan,DIRECT
-- RULE-SET,WeChat,DIRECT
-- RULE-SET,Sina,DIRECT
-- RULE-SET,Zhihu,DIRECT
-- RULE-SET,XiaoHongShu,DIRECT
+- RULE-SET,NetEaseMusic,直连-IPv6优先
+- RULE-SET,Baidu,直连-IPv6优先
+- RULE-SET,DouBan,直连-IPv6优先
+- RULE-SET,WeChat,直连-IPv6优先
+- RULE-SET,Sina,直连-IPv6优先
+- RULE-SET,Zhihu,直连-IPv6优先
+- RULE-SET,XiaoHongShu,直连-IPv6优先
 - RULE-SET,ByteDance,字节跳动
-- DOMAIN-SUFFIX,163.com,DIRECT
-- RULE-SET,Other,DIRECT
-- RULE-SET,China,DIRECT
-- GEOIP,CN,DIRECT
+- DOMAIN-SUFFIX,163.com,直连-IPv6优先
+- RULE-SET,Other,直连-IPv6优先
+- RULE-SET,China,直连-IPv6优先
+- GEOIP,CN,直连-IPv6优先
 - MATCH,代理
