@@ -61,15 +61,7 @@ proxy-groups:
     - 未送中fallback
     - AI手动
     - 除香港手动
-  use:
-    - 吹雪月订阅
-    - 良心云
-  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
-  url: https://www.gstatic.com/generate_204
-  interval: 3600
-  lazy: true
-- name: 所有节点
-  type: select
+    - 香港手动
   use:
     - 吹雪月订阅
     - 良心云
@@ -82,7 +74,7 @@ proxy-groups:
   use:
     - 吹雪月订阅
     - 良心云
-  filter: '(?i)(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$))`(?i)(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$))`(?i)(🇰🇷|韩国|韓國|Korea|(^|[^A-Za-z])KR([^A-Za-z]|$))`(?i)(🇹🇼|台湾|台灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$))`(?i)(🇬🇧|🇩🇪|英国|英國|德国|德國|United Kingdom|Britain|Germany|(^|[^A-Za-z])(UK|GB|DE)([^A-Za-z]|$))`(?i)(🇺🇸|美国|美國|United States|America|(^|[^A-Za-z])US([^A-Za-z]|$))'
+  filter: '^\[吹雪月\] 🇸🇬新加坡•移联01$`^\[吹雪月\] 🇸🇬新加坡•移联02$`^\[良心云\] 🇸🇬新加坡专线03\|BGP\|流媒体$`^\[良心云\] 🇸🇬新加坡专线04\|BGP\|流媒体$`^\[吹雪月\] 🇯🇵日本•移联01$`^\[吹雪月\] 🇯🇵日本•移联02$`^\[吹雪月\] 🇰🇷韩国•移联01$`^\[吹雪月\] 🇨🇳台湾•移联01$`^\[吹雪月\] 🇬🇧英国•移联01$`^\[吹雪月\] 🇩🇪德国•移联01$`^\[吹雪月\] 🇺🇸美国•移联01$'
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
   interval: 600
@@ -108,195 +100,205 @@ proxy-groups:
   url: https://www.gstatic.com/generate_204
   interval: 3600
   lazy: true
+- name: 香港手动
+  type: select
+  filter: '(?i)(🇭🇰|香港|深港|沪港|京港|\bHK\b|Hong\s*Kong)'
+  use:
+    - 吹雪月订阅
+    - 良心云
+  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+  url: https://www.gstatic.com/generate_204
+  interval: 3600
+  lazy: true
 - name: AI
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: TikTok
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Telegram
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: YouTube
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Netflix
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Disney+
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Max
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Spotify
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Twitter
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Facebook
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: PayPal
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: Amazon
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: 谷歌服务
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: 微软服务
   type: select
   default-selected: DIRECT
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: 游戏平台
   type: select
   default-selected: 代理
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: 苹果服务
   type: select
   default-selected: DIRECT
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: 苹果推送
   type: select
   default-selected: DIRECT
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: 哔哩哔哩
   type: select
   default-selected: DIRECT
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 - name: 字节跳动
   type: select
   default-selected: DIRECT
   proxies:
   - 代理
-  - 所有节点
   - 未送中fallback
   - AI手动
   - 除香港手动
+  - 香港手动
   - DIRECT
 rule-providers:
   Lan:
