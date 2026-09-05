@@ -2,7 +2,11 @@ mode: rule
 ipv6: true
 unified-delay: true
 tcp-concurrent: true
-proxies: []
+proxies:
+  - name: 直连-IPv6优先
+    type: direct
+    udp: true
+    ip-version: ipv6-prefer
 dns:
   enable: true
   listen: '[::]:1053'
@@ -120,6 +124,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: TikTok
   type: select
   default-selected: 代理
@@ -130,6 +135,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Telegram
   type: select
   default-selected: 代理
@@ -140,6 +146,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: YouTube
   type: select
   default-selected: 代理
@@ -150,6 +157,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Netflix
   type: select
   default-selected: 代理
@@ -160,6 +168,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Disney+
   type: select
   default-selected: 代理
@@ -170,6 +179,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Max
   type: select
   default-selected: 代理
@@ -180,6 +190,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Spotify
   type: select
   default-selected: 代理
@@ -190,6 +201,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Twitter
   type: select
   default-selected: 代理
@@ -200,6 +212,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Facebook
   type: select
   default-selected: 代理
@@ -210,6 +223,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: PayPal
   type: select
   default-selected: 代理
@@ -220,6 +234,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: Amazon
   type: select
   default-selected: 代理
@@ -230,6 +245,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: 谷歌服务
   type: select
   default-selected: 代理
@@ -240,6 +256,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: 微软服务
   type: select
   default-selected: DIRECT
@@ -250,6 +267,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: 游戏平台
   type: select
   default-selected: 代理
@@ -260,6 +278,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: 苹果服务
   type: select
   default-selected: DIRECT
@@ -270,6 +289,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: 苹果推送
   type: select
   default-selected: DIRECT
@@ -280,6 +300,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: 哔哩哔哩
   type: select
   default-selected: DIRECT
@@ -290,6 +311,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 - name: 字节跳动
   type: select
   default-selected: DIRECT
@@ -300,6 +322,7 @@ proxy-groups:
   - 除香港手动
   - 香港手动
   - DIRECT
+  - 直连-IPv6优先
 rule-providers:
   Lan:
     type: http
