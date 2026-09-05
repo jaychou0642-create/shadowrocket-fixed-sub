@@ -32,8 +32,8 @@ dns:
   - '*.apple-cloudkit.com'
   - '*.apzones.com'
   default-nameserver:
-  - 223.5.5.5
-  - 119.29.29.29
+  - https://223.5.5.5/dns-query
+  - https://223.6.6.6/dns-query
   nameserver:
   - https://1.1.1.1/dns-query
   - https://8.8.8.8/dns-query
