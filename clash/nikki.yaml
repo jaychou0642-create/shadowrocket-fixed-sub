@@ -63,6 +63,7 @@ proxy-groups:
     - 除香港手动
   use:
     - 吹雪月订阅
+    - 良心云
   exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
   interval: 3600
@@ -71,6 +72,7 @@ proxy-groups:
   type: select
   use:
     - 吹雪月订阅
+    - 良心云
   exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
   interval: 3600
@@ -79,6 +81,7 @@ proxy-groups:
   type: fallback
   use:
     - 吹雪月订阅
+    - 良心云
   filter: '(?i)(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$))`(?i)(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$))`(?i)(🇰🇷|韩国|韓國|Korea|(^|[^A-Za-z])KR([^A-Za-z]|$))`(?i)(🇹🇼|台湾|台灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$))`(?i)(🇬🇧|🇩🇪|英国|英國|德国|德國|United Kingdom|Britain|Germany|(^|[^A-Za-z])(UK|GB|DE)([^A-Za-z]|$))`(?i)(🇺🇸|美国|美國|United States|America|(^|[^A-Za-z])US([^A-Za-z]|$))'
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
@@ -91,6 +94,7 @@ proxy-groups:
   type: select
   use:
     - 吹雪月订阅
+    - 良心云
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
   interval: 3600
@@ -99,6 +103,7 @@ proxy-groups:
   type: select
   use:
     - 吹雪月订阅
+    - 良心云
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
   interval: 3600
