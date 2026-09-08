@@ -3,7 +3,8 @@
 # REPO: https://github.com/jaychou0642-create/shadowrocket-fixed-sub
 # UPDATED: 2026-06-14T13:00:00+08:00
 # DOMAIN: 6
-# TOTAL: 6
+# DOMAIN-SUFFIX: 1
+# TOTAL: 7
 DOMAIN,updates.logitech.com
 DOMAIN,accounts.logi.com
 DOMAIN,api-updates.orbstack.dev
