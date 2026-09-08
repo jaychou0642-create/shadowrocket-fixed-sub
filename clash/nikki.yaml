@@ -546,6 +546,7 @@ rules:
 - DOMAIN-SUFFIX,browserleaks.net,代理
 - DOMAIN-SUFFIX,vpnunlimited.com,代理
 - DOMAIN-SUFFIX,whrq.net,代理
+- DOMAIN,www.bing.com,微软服务
 - RULE-SET,AI,AI
 - RULE-SET,TikTok,TikTok
 - RULE-SET,YouTube,YouTube
