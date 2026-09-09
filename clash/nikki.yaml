@@ -310,12 +310,12 @@ proxy-groups:
   type: select
   default-selected: 直连-IPv6优先
   proxies:
-  - 直连-IPv6优先
   - 代理
   - 未送中fallback
   - AI手动
   - 除香港手动
   - 香港手动
+  - 直连-IPv6优先
 rule-providers:
   Lan:
     type: http
