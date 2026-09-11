@@ -64,10 +64,19 @@ proxy-groups:
 - name: 代理
   type: select
   proxies:
+    - 所有节点手动
     - 未送中fallback
     - AI手动
-    - 所有节点手动
     - 香港手动
+  use:
+    - 吹雪云
+    - 良心云
+  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+  url: https://www.gstatic.com/generate_204
+  interval: 3600
+  lazy: true
+- name: 所有节点手动
+  type: select
   use:
     - 吹雪云
     - 良心云
@@ -97,15 +106,6 @@ proxy-groups:
   url: https://www.gstatic.com/generate_204
   interval: 3600
   lazy: true
-- name: 所有节点手动
-  type: select
-  use:
-    - 吹雪云
-    - 良心云
-  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
-  url: https://www.gstatic.com/generate_204
-  interval: 3600
-  lazy: true
 - name: 香港手动
   type: select
   filter: '(?i)(🇭🇰|香港|深港|沪港|京港|\bHK\b|Hong\s*Kong)'
@@ -121,9 +121,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: TikTok
@@ -131,9 +131,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Telegram
@@ -141,9 +141,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: YouTube
@@ -151,9 +151,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Netflix
@@ -161,9 +161,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Disney+
@@ -171,9 +171,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Max
@@ -181,9 +181,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Spotify
@@ -191,9 +191,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Twitter
@@ -201,9 +201,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Facebook
@@ -211,9 +211,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: PayPal
@@ -221,9 +221,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: Amazon
@@ -231,9 +231,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 谷歌服务
@@ -241,9 +241,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 微软服务
@@ -251,9 +251,9 @@ proxy-groups:
   default-selected: 直连-IPv6优先
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 游戏平台
@@ -261,9 +261,9 @@ proxy-groups:
   default-selected: 代理
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 苹果服务
@@ -271,9 +271,9 @@ proxy-groups:
   default-selected: 直连-IPv6优先
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 苹果推送
@@ -281,9 +281,9 @@ proxy-groups:
   default-selected: 直连-IPv6优先
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 哔哩哔哩
@@ -291,9 +291,9 @@ proxy-groups:
   default-selected: 直连-IPv6优先
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 字节跳动
@@ -301,9 +301,9 @@ proxy-groups:
   default-selected: 直连-IPv6优先
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 - name: 小红书
@@ -311,9 +311,9 @@ proxy-groups:
   default-selected: 直连-IPv6优先
   proxies:
   - 代理
+  - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 所有节点手动
   - 香港手动
   - 直连-IPv6优先
 rule-providers:
