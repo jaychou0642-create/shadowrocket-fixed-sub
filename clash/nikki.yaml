@@ -70,6 +70,7 @@ proxy-groups:
     - 香港手动
   use:
     - 吹雪月订阅
+    - 吹雪云
     - 良心云
   exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
@@ -79,8 +80,9 @@ proxy-groups:
   type: fallback
   use:
     - 吹雪月订阅
+    - 吹雪云
     - 良心云
-  filter: '^\[吹雪月\] 🇸🇬新加坡•移联01$`^\[吹雪月\] 🇸🇬新加坡•移联02$`^\[良心云\] 🇸🇬新加坡专线03\|BGP\|流媒体$`^\[良心云\] 🇸🇬新加坡专线04\|BGP\|流媒体$`^\[吹雪月\] 🇯🇵日本•移联01$`^\[吹雪月\] 🇯🇵日本•移联02$`^\[吹雪月\] 🇰🇷韩国•移联01$`^\[吹雪月\] 🇨🇳台湾•移联01$`^\[吹雪月\] 🇬🇧英国•移联01$`^\[吹雪月\] 🇩🇪德国•移联01$`^\[吹雪月\] 🇺🇸美国•移联01$'
+  filter: '^\[吹雪月\] 🇸🇬新加坡•移联01$`^\[吹雪云\] 🇸🇬新加坡•移联01$`^\[吹雪月\] 🇸🇬新加坡•移联02$`^\[吹雪云\] 🇸🇬新加坡•移联02$`^\[良心云\] 🇸🇬新加坡专线03\|BGP\|流媒体$`^\[良心云\] 🇸🇬新加坡专线04\|BGP\|流媒体$`^\[吹雪月\] 🇯🇵日本•移联01$`^\[吹雪云\] 🇯🇵日本•移联01$`^\[吹雪月\] 🇯🇵日本•移联02$`^\[吹雪云\] 🇯🇵日本•移联02$`^\[吹雪月\] 🇰🇷韩国•移联01$`^\[吹雪云\] 🇰🇷韩国•移联01$`^\[吹雪月\] 🇨🇳台湾•移联01$`^\[吹雪云\] 🇨🇳台湾•移联01$`^\[吹雪月\] 🇬🇧英国•移联01$`^\[吹雪云\] 🇬🇧英国•移联01$`^\[吹雪月\] 🇩🇪德国•移联01$`^\[吹雪云\] 🇩🇪德国•移联01$`^\[吹雪月\] 🇺🇸美国•移联01$`^\[吹雪云\] 🇺🇸美国•移联01$'
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
   interval: 600
@@ -92,6 +94,7 @@ proxy-groups:
   type: select
   use:
     - 吹雪月订阅
+    - 吹雪云
     - 良心云
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
@@ -101,6 +104,7 @@ proxy-groups:
   type: select
   use:
     - 吹雪月订阅
+    - 吹雪云
     - 良心云
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
@@ -111,6 +115,7 @@ proxy-groups:
   filter: '(?i)(🇭🇰|香港|深港|沪港|京港|\bHK\b|Hong\s*Kong)'
   use:
     - 吹雪月订阅
+    - 吹雪云
     - 良心云
   exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
