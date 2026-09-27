@@ -77,6 +77,7 @@ proxy-groups:
   lazy: true
 - name: 所有节点手动
   type: select
+  default-selected: "[良心云] 🇸🇬新加坡专线04|BGP|流媒体"
   use:
     - 吹雪云
     - 良心云
@@ -92,7 +93,7 @@ proxy-groups:
   filter: '^\[吹雪云\] 🇸🇬新加坡•移联01$`^\[吹雪云\] 🇸🇬新加坡•移联02$`^\[良心云\] 🇸🇬新加坡专线03\|BGP\|流媒体$`^\[良心云\] 🇸🇬新加坡专线04\|BGP\|流媒体$`^\[吹雪云\] 🇯🇵日本•移联01$`^\[吹雪云\] 🇯🇵日本•移联02$`^\[吹雪云\] 🇰🇷韩国•移联01$`^\[吹雪云\] 🇨🇳台湾•移联01$`^\[吹雪云\] 🇬🇧英国•移联01$`^\[吹雪云\] 🇩🇪德国•移联01$`^\[吹雪云\] 🇺🇸美国•移联01$'
   exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
   url: https://www.gstatic.com/generate_204
-  interval: 600
+  interval: 300
   lazy: true
   timeout: 5000
   max-failed-times: 2
@@ -121,7 +122,7 @@ proxy-groups:
 #   lazy: true
 - name: AI
   type: select
-  default-selected: 代理
+  default-selected: 未送中fallback
   proxies:
   - 代理
   - 所有节点手动
@@ -141,7 +142,7 @@ proxy-groups:
   - 直连-IPv6优先
 - name: Telegram
   type: select
-  default-selected: 代理
+  default-selected: 所有节点手动
   proxies:
   - 代理
   - 所有节点手动
