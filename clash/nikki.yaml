@@ -67,7 +67,7 @@ proxy-groups:
     - 所有节点手动
     - 未送中fallback
     - AI手动
-    - 香港手动
+    # - 香港手动
   use:
     - 吹雪云
     - 良心云
@@ -106,16 +106,19 @@ proxy-groups:
   url: https://www.gstatic.com/generate_204
   interval: 3600
   lazy: true
-- name: 香港手动
+- name: "──── 服务分流 ────"
   type: select
-  filter: '(?i)(🇭🇰|香港|深港|沪港|京港|\bHK\b|Hong\s*Kong)'
-  use:
-    - 吹雪云
-    - 良心云
-  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
-  url: https://www.gstatic.com/generate_204
-  interval: 3600
-  lazy: true
+  proxies: []
+# - name: 香港手动
+#   type: select
+#   filter: '(?i)(🇭🇰|香港|深港|沪港|京港|\bHK\b|Hong\s*Kong)'
+#   use:
+#     - 吹雪云
+#     - 良心云
+#   exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+#   url: https://www.gstatic.com/generate_204
+#   interval: 3600
+#   lazy: true
 - name: AI
   type: select
   default-selected: 代理
@@ -124,7 +127,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: TikTok
   type: select
@@ -134,7 +137,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Telegram
   type: select
@@ -144,7 +147,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: YouTube
   type: select
@@ -154,7 +157,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Netflix
   type: select
@@ -164,7 +167,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Disney+
   type: select
@@ -174,7 +177,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Max
   type: select
@@ -184,7 +187,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Spotify
   type: select
@@ -194,7 +197,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Twitter
   type: select
@@ -204,7 +207,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Facebook
   type: select
@@ -214,7 +217,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: PayPal
   type: select
@@ -224,7 +227,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: Amazon
   type: select
@@ -234,7 +237,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 谷歌服务
   type: select
@@ -244,7 +247,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 微软服务
   type: select
@@ -254,7 +257,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 游戏平台
   type: select
@@ -264,7 +267,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 苹果服务
   type: select
@@ -274,7 +277,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 苹果推送
   type: select
@@ -284,7 +287,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 哔哩哔哩
   type: select
@@ -294,7 +297,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 字节跳动
   type: select
@@ -304,7 +307,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 - name: 小红书
   type: select
@@ -314,7 +317,7 @@ proxy-groups:
   - 所有节点手动
   - 未送中fallback
   - AI手动
-  - 香港手动
+  # - 香港手动
   - 直连-IPv6优先
 rule-providers:
   Lan:
