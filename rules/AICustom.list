@@ -1,0 +1,235 @@
+# NAME: AICustom
+# AUTHOR: jaychou0642-create
+# REPO: https://github.com/jaychou0642-create/shadowrocket-fixed-sub
+# UPDATED: 2026-09-29T23:18:54+08:00
+# SOURCE: https://github.com/v2fly/domain-list-community/blob/master/data/category-ai-!cn
+# BASELINE: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rule/AI.txt
+# SOURCE-SNAPSHOT-SHA256: 00f96627239e46a5b1d06d002e14708dc7b1ac3ec1f18bf90d33976f3ffacf38
+# BASELINE-SHA256: 9e35a2548a810ed7e8d5e7bee8a916ec0992e54248ab1b27e4d8cf6a5fa3069e
+# Supplemental snapshot: recursively expanded upstream entries not fully covered by AI.txt.
+# Original AI.txt remains referenced separately; this file does not auto-sync upstream changes.
+# Upstream domain/full entries preserve suffix/exact matching; @ attributes are metadata.
+# One ChatGPT Azure regexp uses a compatible wildcard: the numeric suffix is not enforced.
+# DOMAIN: 19
+# DOMAIN-SUFFIX: 129
+# DOMAIN-WILDCARD: 1
+# TOTAL: 149
+
+# > anthropic
+DOMAIN-SUFFIX,clau.de
+DOMAIN-SUFFIX,claude.com
+DOMAIN-SUFFIX,claudemcpclient.com
+DOMAIN-SUFFIX,claudemcpcontent.com
+DOMAIN-SUFFIX,claudeusercontent.com
+DOMAIN,servd-anthropic-website.b-cdn.net
+
+# > dola
+DOMAIN-SUFFIX,cici.com
+DOMAIN-SUFFIX,ciciai.com
+DOMAIN-SUFFIX,ciciaicdn.com
+DOMAIN-SUFFIX,dola.com
+
+# > bytedance-ai-!cn
+DOMAIN-SUFFIX,coze.com
+DOMAIN-SUFFIX,marscode.com
+DOMAIN-SUFFIX,trae.ai
+
+# > cerebras
+DOMAIN-SUFFIX,cerebras.ai
+
+# > comfy-ui-launcher
+DOMAIN-SUFFIX,oystermercury.top
+
+# > comfy
+DOMAIN-SUFFIX,comfy.org
+DOMAIN-SUFFIX,comfyci.org
+DOMAIN-SUFFIX,comfyregistry.org
+
+# > cursor
+DOMAIN-SUFFIX,cursor-cdn.com
+DOMAIN-SUFFIX,cursor.com
+DOMAIN-SUFFIX,cursor.sh
+DOMAIN-SUFFIX,cursorapi.com
+
+# > elevenlabs
+DOMAIN-SUFFIX,elevenlabs.com
+DOMAIN-SUFFIX,elevenlabs.io
+
+# > envato
+DOMAIN-SUFFIX,envato-static.com
+DOMAIN-SUFFIX,envato.com
+DOMAIN-SUFFIX,envatousercontent.com
+DOMAIN-SUFFIX,themeforest.net
+
+# > github-copilot
+DOMAIN,copilot-proxy.githubusercontent.com
+DOMAIN,copilot-workspace.githubnext.com
+DOMAIN,copilotprodattachments.blob.core.windows.net
+DOMAIN,copilot-telemetry-service.githubusercontent.com
+DOMAIN,copilot-telemetry.githubusercontent.com
+
+# > google-deepmind
+DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com
+DOMAIN,webchannel-alkalimakersuite-pa.clients6.google.com
+DOMAIN-SUFFIX,ai.studio
+DOMAIN-SUFFIX,aistudio.google.com
+DOMAIN-SUFFIX,bard.google.com
+DOMAIN-SUFFIX,gemini.google
+DOMAIN-SUFFIX,gemini.google.com
+DOMAIN-SUFFIX,gemini.gstatic.com
+DOMAIN,geminiweb-pa.clients.google.com
+DOMAIN,geminiweb-pa.clients6.google.com
+DOMAIN,cloudaicompanion.googleapis.com
+DOMAIN,cloudcode-pa.googleapis.com
+DOMAIN,daily-cloudcode-pa.googleapis.com
+DOMAIN,notebooklm-pa.googleapis.com
+DOMAIN-SUFFIX,labstailwind.pa.googleapis.com
+DOMAIN-SUFFIX,notebook.google
+DOMAIN-SUFFIX,notebook.google.com
+DOMAIN-SUFFIX,jules.google
+DOMAIN-SUFFIX,jules.google.com
+DOMAIN-SUFFIX,flow.google
+DOMAIN-SUFFIX,flow.google.com
+DOMAIN-SUFFIX,aisandbox-pa.googleapis.com
+DOMAIN-SUFFIX,aicode.googleapis.com
+DOMAIN-SUFFIX,aida.googleapis.com
+DOMAIN-SUFFIX,opal.google
+DOMAIN-SUFFIX,opal.google.com
+DOMAIN,antigravity-pa.googleapis.com
+DOMAIN,antigravity.googleapis.com
+DOMAIN-SUFFIX,antigravity.google
+DOMAIN-SUFFIX,antigravity-unleash.goog
+DOMAIN-SUFFIX,stitch.withgoogle.com
+
+# > groq
+DOMAIN-SUFFIX,groq.com
+
+# > huggingface
+DOMAIN-SUFFIX,hf.co
+DOMAIN-SUFFIX,hf.space
+DOMAIN-SUFFIX,huggingface.co
+
+# > jetbrains-ai
+DOMAIN-SUFFIX,grazie.ai
+DOMAIN-SUFFIX,grazie.aws.intellij.net
+DOMAIN-SUFFIX,jetbrains.ai
+
+# > liveperson
+DOMAIN-SUFFIX,liveperson.net
+DOMAIN-SUFFIX,lpsnmedia.net
+
+# > manus
+DOMAIN-SUFFIX,manus.im
+DOMAIN-SUFFIX,manuscdn.com
+
+# > openai
+DOMAIN-SUFFIX,chatgpt.site
+DOMAIN-SUFFIX,crixet.com
+DOMAIN-SUFFIX,oaistatsig.com
+DOMAIN-SUFFIX,openai.com.cdn.cloudflare.net
+DOMAIN,openaiassets.blob.core.windows.net
+# Upstream regexp: ^chatgpt-async-webps-prod-\S+-\d+\.webpubsub\.azure\.com$
+DOMAIN-WILDCARD,chatgpt-async-webps-prod-*-*.webpubsub.azure.com
+DOMAIN,browser-intake-datadoghq.com
+DOMAIN,openai.qualtrics.com
+
+# > perplexity
+DOMAIN-SUFFIX,perplexity.com
+DOMAIN,ppl-ai-file-upload.s3.amazonaws.com
+
+# > poe
+DOMAIN-SUFFIX,poe.com
+DOMAIN-SUFFIX,poecdn.net
+
+# > windsurf
+DOMAIN-SUFFIX,codeium.com
+DOMAIN-SUFFIX,codeiumdata.com
+DOMAIN-SUFFIX,windsurf.build
+DOMAIN-SUFFIX,windsurf.com
+
+# > xai
+DOMAIN-SUFFIX,grok.x.com
+DOMAIN-SUFFIX,grokipedia.com
+
+# > youmind
+DOMAIN-SUFFIX,youmind.ai
+DOMAIN-SUFFIX,youmind.com
+DOMAIN-SUFFIX,youmind.site
+
+# > category-ai-!cn
+DOMAIN-SUFFIX,coderabbit.ai
+DOMAIN-SUFFIX,coderabbit.gallery.vsassets.io
+DOMAIN-SUFFIX,cohere.ai
+DOMAIN-SUFFIX,cohere.com
+DOMAIN-SUFFIX,copilot-stg.com
+DOMAIN-SUFFIX,copilot.cloud.microsoft
+DOMAIN-SUFFIX,copilot.com
+DOMAIN-SUFFIX,copilot.microsoft.com
+DOMAIN-SUFFIX,deepwiki.com
+DOMAIN-SUFFIX,deepwiki.org
+DOMAIN-SUFFIX,clipdrop.co
+DOMAIN-SUFFIX,jasper.ai
+DOMAIN-SUFFIX,kimi.ai
+DOMAIN-SUFFIX,moonshot.ai
+DOMAIN-SUFFIX,meta.ai
+DOMAIN-SUFFIX,metaaivm.com
+DOMAIN-SUFFIX,muse.ai
+DOMAIN-SUFFIX,agentclientprotocol.com
+DOMAIN-SUFFIX,anythingllm.com
+DOMAIN-SUFFIX,arena.ai
+DOMAIN-SUFFIX,chutes.ai
+DOMAIN-SUFFIX,clawhub.ai
+DOMAIN-SUFFIX,crewai.com
+DOMAIN-SUFFIX,devin.ai
+DOMAIN-SUFFIX,diabrowser.com
+DOMAIN-SUFFIX,diabrowser.engineering
+DOMAIN-SUFFIX,dify.ai
+DOMAIN-SUFFIX,dreamgen.com
+DOMAIN-SUFFIX,duck.ai
+DOMAIN-SUFFIX,gateway.ai.cloudflare.com
+DOMAIN-SUFFIX,h2o.ai
+DOMAIN-SUFFIX,kiro.dev
+DOMAIN-SUFFIX,langchain.com
+DOMAIN-SUFFIX,lmstudio.ai
+DOMAIN-SUFFIX,lovart.ai
+DOMAIN-SUFFIX,midjourney.com
+DOMAIN-SUFFIX,minimax.io
+DOMAIN-SUFFIX,mistral.ai
+DOMAIN-SUFFIX,mozilla.ai
+DOMAIN-SUFFIX,notegpt.io
+DOMAIN-SUFFIX,novelai.net
+DOMAIN-SUFFIX,ollama.com
+DOMAIN-SUFFIX,openart.ai
+DOMAIN-SUFFIX,openclaw.ai
+DOMAIN-SUFFIX,opencode.ai
+DOMAIN-SUFFIX,openspec.dev
+DOMAIN-SUFFIX,plannotator.ai
+DOMAIN-SUFFIX,qoder.com
+DOMAIN-SUFFIX,sider.ai
+DOMAIN-SUFFIX,spicywriter.com
+DOMAIN-SUFFIX,talkai.info
+DOMAIN-SUFFIX,tapnow.ai
+DOMAIN-SUFFIX,tripo3d.ai
+
+# Upstream license (v2fly/domain-list-community):
+# MIT License
+#
+# Copyright (c) 2018-2019 V2Ray
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
