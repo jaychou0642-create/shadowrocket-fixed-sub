@@ -494,19 +494,19 @@ rule-providers:
     behavior: classical
     format: text
     interval: 86400
-    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/AICustom.list
+    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/rules/AICustom.list
   AppleProxy:
     type: http
     behavior: classical
     format: text
     interval: 86400
-    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/AppleProxy.list
+    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/rules/AppleProxy.list
   Other:
     type: http
     behavior: classical
     format: text
     interval: 86400
-    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/Other.list
+    url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/rules/Other.list
 rules:
 - DOMAIN,localhost,直连-IPv6优先
 - DOMAIN-SUFFIX,local,直连-IPv6优先

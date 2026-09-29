@@ -172,9 +172,9 @@ const main = (config) => {
     Global: rp("https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Global/Global.list"),
     China: rp("https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/China/China.list"),
     AI: rp("https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rule/AI.txt"),
-    AppleProxy: rp("https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/AppleProxy.list"),
-    AppleCustom: rp("https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/AppleCustom.list"),
-    Other: rp("https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/refs/heads/main/rules/Other.list"),
+    AppleProxy: rp("https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/rules/AppleProxy.list"),
+    AppleCustom: rp("https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/rules/AppleCustom.list"),
+    Other: rp("https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/rules/Other.list"),
   };
 
   config.rules = [
