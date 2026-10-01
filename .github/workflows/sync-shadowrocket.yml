@@ -1,0 +1,55 @@
+name: Sync Shadowrocket homepage-following profile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - configs/lazy_group_by_jaychou.conf
+      - scripts/sync_shadowrocket.py
+      - tests/test_sync_shadowrocket.py
+      - .github/workflows/sync-shadowrocket.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shadowrocket-config-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Test, generate and commit derived profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Refresh and regenerate on each attempt so a concurrent main update
+          # cannot leave a profile generated from an older source.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python3 -m unittest discover -s tests -p 'test_sync_shadowrocket.py'
+            python3 scripts/sync_shadowrocket.py
+            git add configs/lazy_group_proxy_by_jaychou.conf
+            if git diff --cached --quiet; then
+              echo "Derived profile is already synchronized."
+              exit 0
+            fi
+            git commit -m "Sync homepage-following Shadowrocket profile"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Main changed during synchronization; retrying ($attempt/3)."
+          done
+          echo "Unable to publish the derived profile after three attempts."
+          exit 1
