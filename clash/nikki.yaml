@@ -142,7 +142,7 @@ proxy-groups:
   - 直连-IPv6优先
 - name: Telegram
   type: select
-  default-selected: 所有节点手动
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点手动
