@@ -122,7 +122,7 @@ proxy-groups:
 #   lazy: true
 - name: AI
   type: select
-  default-selected: 未送中fallback
+  default-selected: 代理
   proxies:
   - 代理
   - 所有节点手动
