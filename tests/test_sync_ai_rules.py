@@ -109,6 +109,132 @@ class SyncAIRulesTests(unittest.TestCase):
             [sync.Rule("DOMAIN", "api.cn.example")],
         )
 
+    def test_global_affiliation_adds_rules_from_other_data_files(self):
+        self.write_source("category-ai-!cn", "domain:direct.example\n")
+        self.write_source("shared-list", "domain:shared.example &category-ai-!cn\n")
+        self.assertEqual(
+            sync.expand_source(self.source, "category-ai-!cn"),
+            [sync.Rule("DOMAIN-SUFFIX", "direct.example"),
+             sync.Rule("DOMAIN-SUFFIX", "shared.example")],
+        )
+
+    def test_affiliation_on_included_list_propagates_to_its_rules(self):
+        self.write_source("category-ai-!cn", "include:child\n")
+        self.write_source("child", "domain:child.example\n")
+        self.write_source("external", "full:nested.example &child\n")
+        self.assertEqual(
+            sync.expand_source(self.source),
+            [sync.Rule("DOMAIN", "nested.example"),
+             sync.Rule("DOMAIN-SUFFIX", "child.example")],
+        )
+
+    def test_virtual_affiliation_list_needs_no_data_file(self):
+        self.write_source("category-ai-!cn", "include:virtual-ai\n")
+        self.write_source("shared-list", "domain:virtual.example &virtual-ai\n")
+        self.assertIn(
+            sync.Rule("DOMAIN-SUFFIX", "virtual.example"),
+            sync.expand_source(self.source),
+        )
+
+    def test_multiple_affiliations_and_duplicate_domains_are_deduplicated(self):
+        self.write_source("category-ai-!cn", "domain:duplicate.example\n")
+        self.write_source("one", "domain:duplicate.example &category-ai-!cn &other\n")
+        self.write_source("two", "domain:duplicate.example &other &category-ai-!cn\n")
+        self.assertEqual(
+            sync.expand_source(self.source),
+            [sync.Rule("DOMAIN-SUFFIX", "duplicate.example")],
+        )
+
+    def test_attributes_are_preserved_before_include_selector_filtering(self):
+        self.write_source("category-ai-!cn", "include:child @region=cn\n")
+        self.write_source("child", "domain:base.example\n")
+        self.write_source(
+            "external",
+            "domain:variant.example &child @region=cn\n"
+            "domain:variant.example &child @region=us\n"
+            "domain:only-cn.example &child @region=cn\n"
+            "domain:only-us.example &child @region=us\n",
+        )
+        self.assertEqual(
+            sync.expand_source(self.source),
+            [sync.Rule("DOMAIN-SUFFIX", "only-cn.example"),
+             sync.Rule("DOMAIN-SUFFIX", "variant.example")],
+        )
+        self.write_source("category-ai-!cn", "include:child @-region=cn\n")
+        self.assertEqual(
+            sync.expand_source(self.source),
+            [sync.Rule("DOMAIN-SUFFIX", "base.example"),
+             sync.Rule("DOMAIN-SUFFIX", "only-us.example"),
+             sync.Rule("DOMAIN-SUFFIX", "variant.example")],
+        )
+
+    def test_affiliation_names_are_case_insensitive(self):
+        self.write_source("category-ai-!cn", "domain:direct.example\n")
+        self.write_source("other", "domain:Mixed.Example &CATEGORY-AI-!CN\n")
+        self.assertIn(
+            sync.Rule("DOMAIN-SUFFIX", "mixed.example"),
+            sync.expand_source(self.source),
+        )
+
+    def test_include_line_with_affiliation_is_rejected(self):
+        self.write_source("category-ai-!cn", "include:child &category-ai-!cn\n")
+        self.write_source("child", "domain:child.example\n")
+        with self.assertRaises(sync.InputError):
+            sync.expand_source(self.source)
+
+    def test_unknown_syntax_in_relevant_affiliation_file_fails_and_preserves_output(self):
+        self.write_source("category-ai-!cn", "domain:valid.example\n")
+        self.write_source("shared", "regexp:^unsupported\\.example$ &category-ai-!cn\n")
+        self.write_baseline()
+        self.output.write_text("old rules\n", encoding="utf-8")
+        old = self.output.read_bytes()
+        result = self.cli()
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(self.output.read_bytes(), old)
+
+    def test_unrelated_unknown_regex_and_affiliation_do_not_change_ai_or_source_hash(self):
+        self.write_source("category-ai-!cn", "domain:valid.example\n")
+        unrelated = self.write_source(
+            "unrelated", "regexp:^unsupported\\.example$\ndomain:noise.example &not-an-ai-list\n"
+        )
+        self.write_baseline()
+        first = self.generate()
+        unrelated.write_text(
+            "regexp:^another-unsupported$\ndomain:other-noise.example &not-an-ai-list\n",
+            encoding="utf-8",
+        )
+        second = self.generate()
+        self.assertEqual(first, second)
+
+    def test_irrelevant_lines_in_external_affiliation_file_do_not_change_hash(self):
+        self.write_source("category-ai-!cn", "domain:valid.example\n")
+        affiliate = self.write_source(
+            "external",
+            "domain:related.example &category-ai-!cn\n"
+            "domain:noise.example &some-other-list\n",
+        )
+        self.write_baseline()
+        first = self.generate()
+        affiliate.write_text(
+            "domain:inserted.example &another-unrelated-list\n"
+            "domain:related.example &category-ai-!cn\n"
+            "domain:changed.example &some-other-list\n",
+            encoding="utf-8",
+        )
+        unchanged = self.generate()
+        self.assertEqual(first, unchanged)
+
+        affiliate.write_text(
+            "domain:inserted.example &another-unrelated-list\n"
+            "domain:updated.example &category-ai-!cn\n"
+            "domain:changed.example &some-other-list\n",
+            encoding="utf-8",
+        )
+        changed = self.generate()
+        self.assertNotEqual(first, changed)
+        self.assertNotIn("related.example", changed)
+        self.assertIn("updated.example", changed)
+
     def test_exact_and_suffix_are_distinct_but_suffix_covers_descendants(self):
         self.write_source("category-ai-!cn", "full:example.com\ndomain:sub.example.com\n")
         self.write_baseline("DOMAIN,example.com\n")

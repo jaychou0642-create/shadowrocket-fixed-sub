@@ -15,11 +15,19 @@ Pull requests run the offline tests without publishing.
 
 Each run reads a complete checkout of v2fly's `master` branch and ProxyRules'
 `main` branch, matching the referenced rule URLs, and records the exact commits
-used. It recursively expands v2fly includes, converts their rule
-types, and removes rules already covered by the current `AI.txt`. It then checks
+used. It recursively expands v2fly includes and merges rules assigned by
+`&list-name` affiliations from other files, including affiliations to included
+sub-lists or lists without their own data file. Attributes remain available for
+include filtering before rules are deduplicated. It converts the rule types and
+removes rules already covered by the current `AI.txt`. It then checks
 the generated output and commits only `rules/AICustom.list` when that file has
 changed. Repeating a run against identical input content does not change its
 timestamp or create another commit.
+
+The source fingerprint includes files expanded through includes and relevant
+external affiliation declarations. Scanning an unrelated file, or changing
+unrelated lines in an external affiliation file, does not by itself publish a
+new version.
 
 Downloads, parsing and tests must succeed before publishing. An unknown rule
 type, unsupported regular expression, missing include or include cycle fails the
@@ -29,7 +37,9 @@ regular expression has an explicitly documented wildcard conversion; its
 numeric component is not enforced by that wildcard.
 
 The workflow shares a publishing concurrency group with the existing profile
-generator and retries normal pushes if `main` advances. It never force-pushes.
+generator. Both use `queue: max` so that multiple pending runs wait instead of
+replacing one another (GitHub's queue limit is 100 pending runs). Runs publish
+serially and retry normal pushes if `main` advances. They never force-push.
 No subscription URLs, node credentials or local Shadowrocket data are needed.
 
 GitHub schedules may run late. In public repositories, GitHub automatically

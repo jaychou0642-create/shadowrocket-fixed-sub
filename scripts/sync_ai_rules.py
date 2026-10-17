@@ -4,7 +4,7 @@
 Public API: Rule(kind, value), expand_source(clone_root, entry=...) -> list[Rule],
 parse_baseline(text) -> list[Rule], is_covered(rule, baseline) -> bool,
 generate(source_dir, source_ref, baseline_file, baseline_ref) -> str.
-Unknown syntax, including affiliation (&list), fails closed.
+Relevant unknown syntax fails closed; affiliations are resolved globally.
 """
 from __future__ import annotations
 
@@ -73,65 +73,126 @@ def _selectors(tokens: list[str], allow_negative: bool) -> list[tuple[bool, str,
 
 def _expand(source_dir: Path, entry: str) -> tuple[list[Rule], str]:
     data = source_dir / 'data'
+    if data.is_symlink():
+        raise InputError('Symlink data directory rejected')
     snapshots: dict[str, bytes] = {}
+    files: dict[str, Path] = {}
+    affiliations: dict[str, list[tuple[str, int, str]]] = {}
+    lines: dict[str, list[tuple[int, str]]] = {}
+    dependencies: set[str] = set()
+    affiliated_dependencies: set[tuple[str, str]] = set()
 
-    def visit(name: str, stack: tuple[str, ...]):
+    def list_name(name: str) -> str:
         if not NAME.fullmatch(name) or name in {'.', '..'}:
             raise InputError(f'Invalid include name: {name!r}')
-        if name in stack:
-            raise InputError(f'Include cycle: {" -> ".join((*stack, name))}')
-        path = data / name
+        return name.lower()
+
+    # Discovery reads each regular file once, but deliberately does not parse
+    # unrelated rules. Only visited lists and their affiliated rows fail closed.
+    for path in sorted(data.iterdir()):
+        name = list_name(path.name)
+        if name in files:
+            raise InputError(f'Duplicate source list name: {name}')
+        files[name] = path
         if path.is_symlink():
-            raise InputError(f'Symlink source rejected: {name}')
-        if name not in snapshots:
-            snapshots[name] = path.read_bytes()
-        raw = snapshots[name]
-        result = []
-        for number, line in enumerate(raw.decode('utf-8').splitlines(), 1):
+            raise InputError(f'Symlink source rejected: {path.name}')
+        if not path.is_file():
+            raise InputError(f'Non-file source rejected: {path.name}')
+        raw = path.read_bytes()
+        snapshots[name] = raw
+        # Preserve invalid unrelated UTF-8 as discovery text; a participating
+        # file/row is decoded strictly before it can affect generated output.
+        rows = []
+        for number, line in enumerate(raw.decode('utf-8', errors='surrogateescape').splitlines(), 1):
             line = line.split('#', 1)[0].strip()
             if not line:
                 continue
+            rows.append((number, line))
+            for token in line.split()[1:]:
+                if token.startswith('&') and NAME.fullmatch(token[1:]):
+                    target = list_name(token[1:])
+                    affiliations.setdefault(target, []).append((name, number, line))
+        lines[name] = rows
+
+    def parse_row(name: str, number: int, line: str, stack: tuple[str, ...]):
+        try:
+            line.encode('utf-8')  # Reject invalid UTF-8 in participating rows.
             parts = line.split()
             head = parts[0]
-            try:
-                kind, value = head.split(':', 1) if ':' in head else ('domain', head)
-                if kind == 'include':
-                    selectors = _selectors(parts[1:], True)
-                    children = visit(value, (*stack, name))
-                    for rule, attrs in children:
+            kind, value = head.split(':', 1) if ':' in head else ('domain', head)
+            kind = kind.lower()
+            if kind == 'include':
+                selectors = _selectors(parts[1:], True)
+                return [(rule, attrs) for rule, attrs in visit(value, stack)
                         if all(((key in attrs and (val is None or attrs[key] == val)) != neg)
-                               for neg, key, val in selectors):
-                            result.append((rule, attrs))
-                    continue
-                attrs_list = _selectors(parts[1:], False)
-                attrs = {}
-                for _, key, val in attrs_list:
-                    if key in attrs and attrs[key] != val:
-                        raise InputError(f'Conflicting attribute values: {key}')
-                    attrs[key] = val
-                if kind == 'regexp':
-                    if value != AZURE_REGEX:
-                        raise InputError(f'Unsupported regexp: {value!r}')
-                    rule = _rule('DOMAIN-WILDCARD', AZURE_WILDCARD)
-                elif kind in {'domain', 'full', 'keyword'}:
-                    rule = _rule({'domain': 'DOMAIN-SUFFIX', 'full': 'DOMAIN',
-                                  'keyword': 'DOMAIN-KEYWORD'}[kind], value)
+                               for neg, key, val in selectors)]
+            attr_tokens = []
+            for token in parts[1:]:
+                if token.startswith('&'):
+                    list_name(token[1:])
                 else:
-                    raise InputError(f'Unsupported source syntax: {head!r}')
-                result.append((rule, attrs))
-            except InputError as exc:
-                raise InputError(f'{name}:{number}: {exc}') from exc
-        return result
+                    attr_tokens.append(token)
+            attrs = {}
+            for _, key, val in _selectors(attr_tokens, False):
+                if key in attrs and attrs[key] != val:
+                    raise InputError(f'Conflicting attribute values: {key}')
+                attrs[key] = val
+            if kind == 'regexp':
+                if value != AZURE_REGEX:
+                    raise InputError(f'Unsupported regexp: {value!r}')
+                rule = _rule('DOMAIN-WILDCARD', AZURE_WILDCARD)
+            elif kind in {'domain', 'full', 'keyword'}:
+                rule = _rule({'domain': 'DOMAIN-SUFFIX', 'full': 'DOMAIN',
+                              'keyword': 'DOMAIN-KEYWORD'}[kind], value)
+            else:
+                raise InputError(f'Unsupported source syntax: {head!r}')
+            return [(rule, attrs)]
+        except (InputError, UnicodeError) as exc:
+            raise InputError(f'{name}:{number}: {exc}') from exc
+
+    def visit(name: str, stack: tuple[str, ...]):
+        name = list_name(name)
+        if name in stack:
+            raise InputError(f'Include cycle: {" -> ".join((*stack, name))}')
+        if name in files:
+            if files[name].is_symlink():
+                raise InputError(f'Symlink source rejected: {name}')
+            snapshots[name].decode('utf-8')
+            dependencies.add(name)
+        elif name not in affiliations:
+            raise InputError(f'Missing include source: {name}')
+        result = []
+        for number, line in lines.get(name, []):
+            result.extend(parse_row(name, number, line, (*stack, name)))
+        for owner, number, line in affiliations.get(name, []):
+            if owner != name:
+                result.extend(parse_row(owner, number, line, (*stack, name)))
+                affiliated_dependencies.add((owner, line))
+        # Attributes are part of entry identity: distinct variants must survive
+        # until all enclosing include filters have been applied.
+        unique = {}
+        for rule, attrs in result:
+            unique[(rule, tuple(sorted(attrs.items())))] = (rule, attrs)
+        return list(unique.values())
 
     entries = visit(entry, ())
     if not entries:
         raise InputError('Upstream expanded list is empty')
     digest = hashlib.sha256()
-    for name, raw in sorted(snapshots.items()):
-        # Length framing prevents ambiguity between paths and file contents.
+
+    def frame(name: str, raw: bytes):
         encoded = name.encode()
         digest.update(len(encoded).to_bytes(8, 'big') + encoded)
         digest.update(len(raw).to_bytes(8, 'big') + raw)
+
+    for name in sorted(dependencies):
+        # Preserve the original digest exactly when no external rows participate.
+        frame(name, snapshots[name])
+    for owner, line in sorted(affiliated_dependencies):
+        if owner not in dependencies:
+            # No line numbers or unrelated rows: unrelated edits cannot churn
+            # provenance. The marker cannot collide with a valid source name.
+            frame('affiliation:' + owner, line.encode())
     return sorted({rule for rule, _ in entries}), digest.hexdigest()
 
 
