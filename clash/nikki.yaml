@@ -39,9 +39,6 @@ dns:
   - https://223.5.5.5/dns-query
   - https://223.6.6.6/dns-query
   nameserver:
-  - https://doh.pub/dns-query
-  - https://dns.alidns.com/dns-query
-  fallback:
   - system
   proxy-server-nameserver:
   - https://doh.pub/dns-query
@@ -61,265 +58,313 @@ profile:
   store-fake-ip: true
 # Proxy providers are defined locally in Nikki. Never commit subscription URLs or tokens.
 proxy-groups:
-- name: 代理
+# 所有代理直接选择订阅节点，对应小火箭首页 PROXY。
+- name: '所有代理'
+  type: select
+  default-selected: '[良心云] 🇭🇰香港专线04|BGP|住宅IP'
+  proxies:
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+  use:
+  - 吹雪云
+  - 良心云
+  exclude-filter: '(?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|有效期|重置|更新|Traffic|Expire|Expiry|Remaining|Reset|Update|Official|Website|Channel|Group|❗)'
+- name: 'Green'
+  type: select
+  default-selected: '未送中'
+  proxies:
+  - '所有代理'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '──── 节点分组 ────'
   type: select
   proxies:
-    - 所有节点手动
-    - 未送中fallback
-    - AI手动
-    # - 香港手动
+  - REJECT
+- name: '未送中'
+  type: select
+  # 当前 Nikki 仅有吹雪云、良心云；暂不引用魔戒的新加坡SG-HY2、韩国KR-HY2。
   use:
-    - 吹雪云
-    - 良心云
-  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
-  url: https://www.gstatic.com/generate_204
-  interval: 3600
-  lazy: true
-- name: 未送中fallback
-  type: fallback
-  use:
-    - 吹雪云
-    - 良心云
+  - 吹雪云
+  - 良心云
   filter: '^\[吹雪云\] 🇯🇵日本•移联02$`^\[吹雪云\] 🇯🇵日本•移联01$`^\[吹雪云\] 🇸🇬新加坡•移联01$`^\[良心云\] 🇸🇬新加坡专线04\|BGP\|流媒体$`^\[吹雪云\] 🇺🇸美国•移联01$'
-  exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|剩余流量|套餐到期|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
+  exclude-filter: '(?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|有效期|重置|更新|Traffic|Expire|Expiry|Remaining|Reset|Update|Official|Website|Channel|Group|❗)'
+  empty-fallback: REJECT
+  default-selected: '[吹雪云] 🇯🇵日本•移联02'
+- name: '未送中fallback'
+  type: fallback
+  # 当前 Nikki 仅有吹雪云、良心云；暂不引用魔戒的新加坡SG-HY2、韩国KR-HY2。
+  use:
+  - 吹雪云
+  - 良心云
+  filter: '^\[吹雪云\] 🇯🇵日本•移联02$`^\[吹雪云\] 🇯🇵日本•移联01$`^\[吹雪云\] 🇸🇬新加坡•移联01$`^\[良心云\] 🇸🇬新加坡专线04\|BGP\|流媒体$`^\[吹雪云\] 🇺🇸美国•移联01$'
+  exclude-filter: '(?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|有效期|重置|更新|Traffic|Expire|Expiry|Remaining|Reset|Update|Official|Website|Channel|Group|❗)'
+  empty-fallback: REJECT
   url: https://www.gstatic.com/generate_204
-  interval: 300
-  lazy: true
+  interval: 600
   timeout: 5000
   max-failed-times: 2
   expected-status: 204
-- name: AI手动
+  lazy: true
+- name: '非香港'
   type: select
   use:
-    - 吹雪云
-    - 良心云
-  exclude-filter: (?i)(🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港|官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
-  url: https://www.gstatic.com/generate_204
-  interval: 3600
-  lazy: true
-- name: 所有节点手动
+  - 吹雪云
+  - 良心云
+  empty-fallback: REJECT
+  exclude-filter: '(?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|有效期|重置|更新|Traffic|Expire|Expiry|Remaining|Reset|Update|Official|Website|Channel|Group|❗|🇭🇰|HK|Hong|香港|深港|沪港|京港|港)'
+- name: '香港'
   type: select
-  default-selected: "[良心云] 🇸🇬新加坡专线04|BGP|流媒体"
   use:
-    - 吹雪云
-    - 良心云
-  exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
-  url: https://www.gstatic.com/generate_204
-  interval: 3600
-  lazy: true
-- name: "──── 服务分流 ────"
+  - 吹雪云
+  - 良心云
+  empty-fallback: REJECT
+  filter: '(?i)(🇭🇰|HK|Hong|香港|深港|沪港|京港|港)'
+  exclude-filter: '(?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|有效期|重置|更新|Traffic|Expire|Expiry|Remaining|Reset|Update|Official|Website|Channel|Group|❗)'
+- name: '──── 服务分流 ────'
   type: select
-  proxies: []
-# - name: 香港手动
-#   type: select
-#   filter: '(?i)(🇭🇰|香港|深港|沪港|京港|\bHK\b|Hong\s*Kong)'
-#   use:
-#     - 吹雪云
-#     - 良心云
-#   exclude-filter: (?i)(官网|网址|导航|群组|频道|客服|订阅|套餐|流量|剩余|到期|过期|重置|更新|Traffic|Expire|Remaining|Reset|Update|Official|Website|Channel|Group|❗)
-#   url: https://www.gstatic.com/generate_204
-#   interval: 3600
-#   lazy: true
-- name: AI
-  type: select
-  default-selected: 代理
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: TikTok
+  - REJECT
+- name: 'AI'
   type: select
-  default-selected: 代理
+  default-selected: 'Green'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Telegram
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '谷歌服务'
   type: select
-  default-selected: 代理
+  default-selected: 'Green'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: YouTube
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'Twitter'
   type: select
-  default-selected: 代理
+  default-selected: 'Green'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Netflix
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'TikTok'
   type: select
-  default-selected: 代理
+  default-selected: 'Green'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Disney+
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'Facebook'
   type: select
-  default-selected: 代理
+  default-selected: 'Green'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Max
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'Amazon'
   type: select
-  default-selected: 代理
+  default-selected: 'Green'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Spotify
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'PayPal'
   type: select
-  default-selected: 代理
+  default-selected: 'Green'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Twitter
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'YouTube'
   type: select
-  default-selected: 代理
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Facebook
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'Telegram'
   type: select
-  default-selected: 代理
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: PayPal
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '流媒体'
   type: select
-  default-selected: 代理
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: Amazon
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '游戏平台'
   type: select
-  default-selected: 代理
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 谷歌服务
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'DNS泄漏检测'
   type: select
-  default-selected: 代理
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 微软服务
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '苹果代理'
   type: select
-  default-selected: 直连-IPv6优先
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 游戏平台
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'GitHub'
   type: select
-  default-selected: 代理
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 苹果服务
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: 'FINAL'
   type: select
-  default-selected: 直连-IPv6优先
+  default-selected: '所有代理'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 苹果推送
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '──── 直连服务 ────'
   type: select
-  default-selected: 直连-IPv6优先
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 哔哩哔哩
+  - REJECT
+- name: '微软服务'
   type: select
-  default-selected: 直连-IPv6优先
+  default-selected: '直连-IPv6优先'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 字节跳动
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '苹果服务'
   type: select
-  default-selected: 直连-IPv6优先
+  default-selected: '直连-IPv6优先'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
-- name: 小红书
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '苹果推送'
   type: select
-  default-selected: 直连-IPv6优先
+  default-selected: '直连-IPv6优先'
   proxies:
-  - 代理
-  - 所有节点手动
-  - 未送中fallback
-  - AI手动
-  # - 香港手动
-  - 直连-IPv6优先
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '哔哩哔哩'
+  type: select
+  default-selected: '直连-IPv6优先'
+  proxies:
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '字节跳动'
+  type: select
+  default-selected: '直连-IPv6优先'
+  proxies:
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
+- name: '小红书'
+  type: select
+  default-selected: '直连-IPv6优先'
+  proxies:
+  - '所有代理'
+  - 'Green'
+  - '未送中'
+  - '未送中fallback'
+  - '非香港'
+  - '香港'
+  - '直连-IPv6优先'
 rule-providers:
   Lan:
     type: http
@@ -507,6 +552,18 @@ rule-providers:
     format: text
     interval: 86400
     url: https://raw.githubusercontent.com/jaychou0642-create/shadowrocket-fixed-sub/main/rules/Other.list
+  Whatsapp:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Whatsapp/Whatsapp_No_Resolve.yaml
+  Threads:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Threads/Threads_No_Resolve.yaml
 rules:
 - DOMAIN,localhost,直连-IPv6优先
 - DOMAIN-SUFFIX,local,直连-IPv6优先
@@ -520,39 +577,41 @@ rules:
 - DOMAIN-SUFFIX,95516.com,直连-IPv6优先
 - DOMAIN-SUFFIX,95533.com,直连-IPv6优先
 - DOMAIN-SUFFIX,95599.cn,直连-IPv6优先
-- DOMAIN-SUFFIX,dnsleaktest.com,代理
-- DOMAIN-SUFFIX,ipleak.net,代理
-- DOMAIN-SUFFIX,browserleaks.com,代理
-- DOMAIN-SUFFIX,browserleaks.org,代理
-- DOMAIN-SUFFIX,browserleaks.net,代理
-- DOMAIN-SUFFIX,vpnunlimited.com,代理
-- DOMAIN-SUFFIX,whrq.net,代理
+- DOMAIN-SUFFIX,dnsleaktest.com,DNS泄漏检测
+- DOMAIN-SUFFIX,ipleak.net,DNS泄漏检测
+- DOMAIN-SUFFIX,browserleaks.com,DNS泄漏检测
+- DOMAIN-SUFFIX,browserleaks.org,DNS泄漏检测
+- DOMAIN-SUFFIX,browserleaks.net,DNS泄漏检测
+- DOMAIN-SUFFIX,vpnunlimited.com,DNS泄漏检测
+- DOMAIN-SUFFIX,whrq.net,DNS泄漏检测
 - DOMAIN,www.bing.com,微软服务
+- DOMAIN,c.apple.news,苹果代理
+- DOMAIN,vod-ap-aoc.tv.apple.com,苹果代理
+- RULE-SET,AppleProxy,苹果推送
+- RULE-SET,Apple,苹果服务
 - RULE-SET,AI,AI
 - RULE-SET,AICustom,AI
 - RULE-SET,TikTok,TikTok
 - RULE-SET,YouTube,YouTube
-- RULE-SET,Netflix,Netflix
-- RULE-SET,Disney,Disney+
-- DOMAIN-SUFFIX,litix.io,Max
-- DOMAIN-SUFFIX,discomax.com,Max
-- DOMAIN-SUFFIX,brightline.tv,Max
-- RULE-SET,HBO,Max
-- RULE-SET,Spotify,Spotify
+- RULE-SET,Netflix,流媒体
+- RULE-SET,Disney,流媒体
+- DOMAIN-SUFFIX,litix.io,流媒体
+- DOMAIN-SUFFIX,discomax.com,流媒体
+- DOMAIN-SUFFIX,brightline.tv,流媒体
+- RULE-SET,HBO,流媒体
+- RULE-SET,Spotify,流媒体
 - RULE-SET,Telegram,Telegram
 - RULE-SET,PayPal,PayPal
 - RULE-SET,Twitter,Twitter
 - RULE-SET,Facebook,Facebook
+- RULE-SET,Whatsapp,Facebook
+- RULE-SET,Threads,Facebook
 - RULE-SET,Amazon,Amazon
-- RULE-SET,GitHub,代理
+- RULE-SET,GitHub,GitHub
 - RULE-SET,Sony,游戏平台
 - RULE-SET,Game,游戏平台
 - RULE-SET,Microsoft,微软服务
 - RULE-SET,Google,谷歌服务
-- DOMAIN,c.apple.news,代理
-- DOMAIN,vod-ap-aoc.tv.apple.com,代理
-- RULE-SET,AppleProxy,苹果推送
-- RULE-SET,Apple,苹果服务
 - RULE-SET,BiliBili,哔哩哔哩
 - RULE-SET,NetEaseMusic,直连-IPv6优先
 - RULE-SET,Baidu,直连-IPv6优先
@@ -565,4 +624,4 @@ rules:
 - RULE-SET,Other,直连-IPv6优先
 - RULE-SET,China,直连-IPv6优先
 - GEOIP,CN,直连-IPv6优先
-- MATCH,代理
+- MATCH,FINAL
