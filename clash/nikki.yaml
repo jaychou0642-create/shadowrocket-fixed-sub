@@ -61,7 +61,7 @@ proxy-groups:
 # 所有代理直接选择订阅节点，对应小火箭首页 PROXY。
 - name: '所有代理'
   type: select
-  default-selected: '[良心云] 🇭🇰香港专线04|BGP|住宅IP'
+  default-selected: '[良心云] 🇭🇰香港专线04|BGP|流媒体'
   proxies:
   - '未送中'
   - '未送中fallback'
